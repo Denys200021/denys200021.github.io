@@ -10,7 +10,7 @@ REVEAL_SOURCE = ROOT / 'src/reveal.ts'
 
 with tempfile.TemporaryDirectory(prefix='legion-reveal-') as temp_dir:
     subprocess.run([
-        'tsc', str(REVEAL_SOURCE), '--target', 'ES2020', '--module', 'ES2020',
+        'tsc', '--ignoreConfig', str(REVEAL_SOURCE), '--target', 'ES2020', '--module', 'ES2020',
         '--lib', 'ES2020,DOM,DOM.Iterable', '--skipLibCheck', '--outDir', temp_dir,
     ], check=True, capture_output=True, text=True)
     reveal_js = (Path(temp_dir) / 'reveal.js').read_text()
