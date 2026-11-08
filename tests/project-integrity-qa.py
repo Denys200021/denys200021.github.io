@@ -116,7 +116,7 @@ check('url: "https://legioniz.github.io"' in jekyll_config and 'baseurl: ""' in 
       "Jekyll URL metadata matches the Vite root-site base and canonical URL")
 check(workflow.index("npm run verify") < workflow.index("actions/jekyll-build-pages@v1") < workflow.index("actions/upload-pages-artifact@v4"),
       "Build/verification, Jekyll packaging, and Pages artifact upload occur in the required order")
-check("cache: npm" not in workflow, "Node setup does not require an uncommitted package-lock.json for cache key generation")
+check("cache: npm" in workflow and "npm ci --no-audit --no-fund" in workflow and (ROOT / "package-lock.json").is_file(), "Node setup uses npm caching with the committed lockfile and reproducible npm ci installation")
 check("needs: verify-and-package" in workflow and "id-token: write" in workflow and "pages: write" in workflow,
       "Pages deployment waits for verification and has the documented Pages/id-token permissions")
 release_runner = read("scripts/portfolio.mjs")
