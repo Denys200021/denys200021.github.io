@@ -892,7 +892,7 @@ export default function App() {
       <div className="scroll-progress" ref={progressRef}/>
       <IntroSequence/>
       <header ref={headerRef} className={`site-header ${headerHidden && !mobileOpen ? 'header-hidden' : ''} ${mobileOpen ? 'mobile-nav-active' : ''}`}>
-        <a className="brand" href="#home" onClick={(event) => { event.preventDefault(); navigate('home') }} aria-label={`${siteConfig.fullName} home`}>
+        <a className="brand" href="#home" onClick={(event) => { event.preventDefault(); navigate('home') }} aria-label={`KA. KING ART DEVELOPER PORTFOLIO — ${siteConfig.fullName} home`}>
           <span className="brand-mark"><span className="brand-monogram">K<span>A</span></span></span><span className="brand-copy"><strong>KING ART</strong><small>DEVELOPER PORTFOLIO</small></span>
         </a>
         <nav id="primary-navigation" className={`main-nav ${mobileOpen ? 'nav-open' : ''}`} aria-label="Main navigation">
