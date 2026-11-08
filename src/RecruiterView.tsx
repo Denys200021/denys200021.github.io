@@ -1,0 +1,210 @@
+import { useEffect, useRef } from 'react'
+import { achievements, education, experience, extracurriculars, projects, skillGroups } from './data'
+import type { Project } from './data'
+import { siteConfig } from './config'
+
+type RecruiterViewProps = {
+  onExit: () => void
+  onOpenProject: (project: Project) => void
+}
+
+const relevantExperience = [
+  experience.find((item) => item.title === 'Computer Support Specialist'),
+  experience.find((item) => item.title.startsWith('Student Teacher')),
+  experience.find((item) => item.title === 'Event Organizer'),
+].filter((item): item is (typeof experience)[number] => Boolean(item))
+
+const otherExperience = experience.filter((item) => !relevantExperience.includes(item))
+const featuredProjects = projects.filter((project) => project.featured && project.category !== 'Creative')
+
+export function RecruiterView({ onExit, onOpenProject }: RecruiterViewProps) {
+  const headingRef = useRef<HTMLHeadingElement>(null)
+  const recruiterRootRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    headingRef.current?.focus({ preventScroll: true })
+  }, [])
+
+  useEffect(() => {
+    const root = recruiterRootRef.current
+    if (!root) return
+    const targets = Array.from(root.querySelectorAll<HTMLElement>('.recruiter-hero, .recruiter-section, .recruiter-contact, .recruiter-experience-card, .recruiter-education-item, .recruiter-awards article, .recruiter-leadership-grid article'))
+    const motionEnabled = document.documentElement.dataset.motion !== 'off'
+    if (!motionEnabled || !('IntersectionObserver' in window)) {
+      targets.forEach((element) => element.classList.add('is-in-view'))
+      if (motionEnabled) root.querySelectorAll<HTMLElement>('.recruiter-timeline').forEach((element) => element.classList.add('motion-active'))
+      return
+    }
+
+    // Reveal the first viewport before activating hidden-state CSS so the hero
+    // never flashes invisible while IntersectionObserver schedules its first batch.
+    targets.filter((element) => { const rect = element.getBoundingClientRect(); return rect.top < window.innerHeight && rect.bottom > 0 })
+      .forEach((element) => element.classList.add('is-in-view'))
+    root.dataset.recruiterMotionReady = 'true'
+    let fallbackTimer = 0
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          (entry.target as HTMLElement).classList.add('is-in-view')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { rootMargin: '0px 0px -7% 0px', threshold: 0.06 })
+    targets.forEach((element) => observer.observe(element))
+
+    const recruiterTimeline = root.querySelector<HTMLElement>('.recruiter-timeline')
+    let timelineObserver: IntersectionObserver | null = null
+    if (recruiterTimeline) {
+      timelineObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => entry.target.classList.toggle('motion-active', entry.isIntersecting))
+      }, { rootMargin: '80px 0px', threshold: 0 })
+      timelineObserver.observe(recruiterTimeline)
+    }
+    fallbackTimer = window.setTimeout(() => targets.forEach((element) => element.classList.add('is-in-view')), 1800)
+
+    return () => {
+      if (fallbackTimer) window.clearTimeout(fallbackTimer)
+      observer.disconnect()
+      timelineObserver?.disconnect()
+      delete root.dataset.recruiterMotionReady
+    }
+  }, [])
+
+  return (
+    <div className="recruiter-view" id="recruiter-view" ref={recruiterRootRef}>
+      <a className="skip-link recruiter-skip" href="#recruiter-main">Skip to recruiter profile</a>
+      <header className="recruiter-topbar">
+        <a className="recruiter-brand" href="#recruiter-top" aria-label={`${siteConfig.fullName} recruiter profile home`}>
+          <span>KA<span>.</span></span>
+          <small>RECRUITER BRIEF / 01</small>
+        </a>
+        <nav className="recruiter-jumps" aria-label="Recruiter profile sections">
+          <a href="#recruiter-projects">Projects</a>
+          <a href="#recruiter-skills">Skills</a>
+          <a href="#recruiter-experience">Experience</a>
+          <a href="#recruiter-education">Education</a>
+          <a href="#recruiter-contact">Contact</a>
+        </nav>
+        <div className="recruiter-actions">
+          <a className="recruiter-download" href={siteConfig.resumePdfPath} download="King-Art-D-Pacumberto-CV.pdf">Download CV · PDF <span aria-hidden="true">↗</span></a>
+          <button type="button" className="recruiter-exit" onClick={onExit}>Full portfolio <span aria-hidden="true">↗</span></button>
+        </div>
+      </header>
+
+      <main id="recruiter-main" className="recruiter-main">
+        <section id="recruiter-top" className="recruiter-hero" aria-labelledby="recruiter-name">
+          <div className="recruiter-hero-copy">
+            <p className="recruiter-eyebrow">{siteConfig.location} <span/> {siteConfig.availabilityNote}</p>
+            <h1 id="recruiter-name" ref={headingRef} tabIndex={-1}>{siteConfig.fullName}<span>.</span></h1>
+            <p className="recruiter-role">BSIT STUDENT · ASPIRING IT PROFESSIONAL</p>
+            <p className="recruiter-intro">I build and explore practical software, data-oriented applications, and embedded systems. My experience also includes computer support, programming instruction, technical operations, event coordination, and collaborative school activities.</p>
+            <div className="recruiter-hero-links">
+              <a className="recruiter-primary-link" href={siteConfig.resumePdfPath} download="King-Art-D-Pacumberto-CV.pdf">Download public CV (PDF) <span aria-hidden="true">↓</span></a>
+              <a href={`mailto:${siteConfig.email}`}>Email <span aria-hidden="true">↗</span></a>
+              <a href={siteConfig.github} target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a>
+              {siteConfig.linkedin && <a href={siteConfig.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn <span aria-hidden="true">↗</span></a>}
+            </div>
+          </div>
+          <aside className="recruiter-snapshot" aria-label="Profile snapshot">
+            <picture className="recruiter-portrait">
+              <source type="image/webp" srcSet="/profile/king-art-portrait-480.webp 480w, /profile/king-art-portrait-800.webp 800w, /profile/king-art-portrait-1023.webp 1023w" sizes="(max-width: 760px) 120px, 180px" />
+              <img src="/profile/king-art-portrait-800.jpg" srcSet="/profile/king-art-portrait-480.jpg 480w, /profile/king-art-portrait-800.jpg 800w, /profile/king-art-portrait-1023.jpg 1023w" sizes="(max-width: 760px) 120px, 180px" width="800" height="1203" alt="Portrait of King Art D. Pacumberto wearing black academic graduation attire with a navy blue stole and white shirt." loading="eager" decoding="async" fetchPriority="high" />
+            </picture>
+            <div className="recruiter-snapshot-mark">KA<span>.</span></div>
+            <div><small>CURRENT STUDY</small><strong>PUP Quezon City</strong><span>BS Information Technology · BSIT 1-2</span></div>
+            <div><small>ACADEMIC YEAR</small><strong>2026–2027</strong><span>Undergraduate student</span></div>
+            <div><small>FOCUS AREAS</small><strong>Software · Systems · Embedded</strong><span>With technical support and production experience</span></div>
+          </aside>
+        </section>
+
+        <section id="recruiter-projects" className="recruiter-section" aria-labelledby="recruiter-projects-title">
+          <div className="recruiter-section-heading"><div><p className="recruiter-eyebrow">SELECTED WORK / 01</p><h2 id="recruiter-projects-title">Projects that show how I build.</h2></div><p>Three technical projects with repositories and documented scope. Open a case study for more detail.</p></div>
+          <div className="recruiter-project-grid">
+            {featuredProjects.map((project) => (
+              <article className="recruiter-project-card" key={project.id} data-project-id={project.id}>
+                <div className={`recruiter-project-art recruiter-art-${project.visual}`} aria-hidden="true"><span>{project.number}</span><i/></div>
+                <div className="recruiter-project-body">
+                  <p className="recruiter-project-type">{project.category} / {project.status}</p>
+                  <h3>{project.shortName}</h3>
+                  <p>{project.summary}</p>
+                  <div className="recruiter-tags">{project.stack.slice(0, 5).map((item) => <span key={item}>{item}</span>)}</div>
+                  <div className="recruiter-project-actions">
+                    <button type="button" onClick={() => onOpenProject(project)}>Read case study <span aria-hidden="true">↗</span></button>
+                    {project.repo && <a href={project.repo} target="_blank" rel="noopener noreferrer">Repository <span aria-hidden="true">↗</span></a>}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="recruiter-skills" className="recruiter-section" aria-labelledby="recruiter-skills-title">
+          <div className="recruiter-section-heading"><div><p className="recruiter-eyebrow">TOOLS & PRACTICE / 02</p><h2 id="recruiter-skills-title">Skills with context.</h2></div><p>No self-assigned proficiency percentages. Skills are grouped by practice area and connected to documented work where evidence exists.</p></div>
+          <div className="recruiter-skill-grid">
+            {skillGroups.map((group, index) => (
+              <article className="recruiter-skill-card" key={group.name}>
+                <span className="recruiter-index">0{index + 1}</span>
+                <h3>{group.name}</h3>
+                <p>{group.note}</p>
+                <div className="recruiter-tags">{group.items.map((skill) => <span key={skill}>{skill}</span>)}</div>
+              </article>
+            ))}
+          </div>
+          <p className="recruiter-scope-note">OSINT and cybersecurity items describe foundational, self-directed practice in owned or explicitly authorized lab environments. They are not presented as professional penetration-testing experience or certification.</p>
+        </section>
+
+        <section id="recruiter-experience" className="recruiter-section" aria-labelledby="recruiter-experience-title">
+          <div className="recruiter-section-heading"><div><p className="recruiter-eyebrow">PRACTICAL EXPERIENCE / 03</p><h2 id="recruiter-experience-title">Technical work and transferable experience.</h2></div><p>Relevant responsibilities are surfaced first. Additional employment history remains available below.</p></div>
+          <div className="recruiter-experience-list recruiter-timeline" data-motion-zone>
+            {relevantExperience.map((item) => (
+              <article className="recruiter-experience-card" key={`${item.title}-${item.period}`}><span className="recruiter-timeline-marker" aria-hidden="true"/>
+                <div><span>{item.period}</span><h3>{item.title}</h3><small>{item.organization}</small></div>
+                <div><p>{item.description}</p><div className="recruiter-tags">{item.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div>
+              </article>
+            ))}
+          </div>
+          <details className="recruiter-more-experience">
+            <summary>Additional work history <span aria-hidden="true">＋</span></summary>
+            <div className="recruiter-experience-list recruiter-experience-secondary">
+              {otherExperience.map((item) => <article className="recruiter-experience-card" key={`${item.title}-${item.period}`}><div><span>{item.period}</span><h3>{item.title}</h3><small>{item.organization}</small></div><div><p>{item.description}</p><div className="recruiter-tags">{item.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div></article>)}
+            </div>
+          </details>
+        </section>
+
+        <section id="recruiter-education" className="recruiter-section recruiter-two-column" aria-labelledby="recruiter-education-title">
+          <div>
+            <p className="recruiter-eyebrow">EDUCATION / 04</p><h2 id="recruiter-education-title">Academic foundation.</h2>
+            <article className="recruiter-education-current"><span>CURRENT / 2026–2027</span><h3>Polytechnic University of the Philippines</h3><p>Bachelor of Science in Information Technology · Quezon City Campus</p><strong>BSIT 1-2</strong></article>
+            {education.map((item) => <article className="recruiter-education-item" key={item.school}><span>{item.period}</span><div><h3>{item.school}</h3><p>{item.level}{item.note ? ` · ${item.note}` : ''}</p></div></article>)}
+          </div>
+          <div>
+            <p className="recruiter-eyebrow">RECOGNITION / 05</p><h2>Selected recognition.</h2>
+            <div className="recruiter-awards">
+              {achievements.map((item) => <article key={item.title}><span>{item.mark}</span><div><h3>{item.title}</h3><p>{item.note}</p>{item.href && <a href={item.href} target="_blank" rel="noopener noreferrer">Published result ↗</a>}</div></article>)}
+            </div>
+            <p className="recruiter-scope-note">Published records are linked where available. Other achievements are based on information supplied for this portfolio; event details are not inferred when they were not provided.</p>
+          </div>
+        </section>
+
+        <section className="recruiter-section" aria-labelledby="recruiter-leadership-title">
+          <div className="recruiter-section-heading"><div><p className="recruiter-eyebrow">LEADERSHIP & COLLABORATION / 06</p><h2 id="recruiter-leadership-title">Work beyond the code.</h2></div><p>Student leadership, school technical production, event support, music, sports, and volunteer photography.</p></div>
+          <div className="recruiter-leadership-grid">
+            {extracurriculars.map((item) => <article key={item.title}><small>{item.organization}</small><h3>{item.title}</h3><p>{item.description}</p></article>)}
+          </div>
+        </section>
+
+        <section id="recruiter-contact" className="recruiter-contact" aria-labelledby="recruiter-contact-title">
+          <div><p className="recruiter-eyebrow">NEXT STEP / CONTACT</p><h2 id="recruiter-contact-title">Open to opportunities and practical collaboration.</h2><p>For internships, entry-level opportunities, project discussions, or questions about the work above.</p></div>
+          <div className="recruiter-contact-actions">
+            <a href={`mailto:${siteConfig.email}`}>{siteConfig.email} ↗</a>
+            <a href={siteConfig.github} target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+            {siteConfig.linkedin && <a href={siteConfig.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>}
+            <a className="recruiter-download" href={siteConfig.resumePdfPath} download="King-Art-D-Pacumberto-CV.pdf">Download CV · PDF ↓</a>
+          </div>
+        </section>
+      </main>
+
+      <footer className="recruiter-footer"><span>© {new Date().getFullYear()} {siteConfig.fullName}</span><span>RECRUITER VIEW / SOURCE-LED PROFILE</span><button type="button" onClick={onExit}>Return to full portfolio ↑</button></footer>
+    </div>
+  )
+}
