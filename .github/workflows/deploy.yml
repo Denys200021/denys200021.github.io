@@ -75,9 +75,11 @@ jobs:
         run: |
           test -s _site/index.html
           test -d _site/assets
+          test -f _site/.nojekyll
           test -s _site/King-Art-Pacumberto-CV.pdf
           test -s _site/King-Art-Pacumberto-Resume.pdf
-          touch _site/.nojekyll
+          grep -Eq '<script[^>]+src="/assets/index-[^"]+\.js"' _site/index.html
+          grep -Eq '<link[^>]+href="/assets/index-[^"]+\.css"' _site/index.html
 
       - name: Save private Lighthouse reports to the workflow run
         if: always() && hashFiles('.lighthouseci/reports/**/*.html') != ''
