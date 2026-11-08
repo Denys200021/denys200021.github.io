@@ -74,7 +74,7 @@ export function RecruiterView({ onExit, onOpenProject }: RecruiterViewProps) {
     <div className="recruiter-view" id="recruiter-view" ref={recruiterRootRef}>
       <a className="skip-link recruiter-skip" href="#recruiter-main">Skip to recruiter profile</a>
       <header className="recruiter-topbar">
-        <a className="recruiter-brand" href="#recruiter-top" aria-label={`${siteConfig.fullName} recruiter profile home`}>
+        <a className="recruiter-brand" href="#recruiter-top" aria-label={`KA. RECRUITER BRIEF / 01 — ${siteConfig.fullName} recruiter profile home`}>
           <span>KA<span>.</span></span>
           <small>RECRUITER BRIEF / 01</small>
         </a>
