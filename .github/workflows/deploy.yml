@@ -19,7 +19,7 @@ jobs:
     permissions:
       contents: read
       pages: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -31,9 +31,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       - name: Install Node dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
 
       - name: Install Lighthouse CI
         run: npm install --global @lhci/cli@0.16.x
@@ -100,7 +101,7 @@ jobs:
     permissions:
       pages: write
       id-token: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: verify-and-package
     steps:
       - name: Deploy verified Jekyll Pages artifact
