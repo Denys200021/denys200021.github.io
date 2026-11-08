@@ -103,8 +103,16 @@ def main() -> None:
             check(lifecycle['revealReady'] or lifecycle['motionOff'], 'Full-view reveal runtime is reinitialized or deliberately disabled by reduced motion')
             check(lifecycle['revealTargets'] >= 20 and lifecycle['headerConnected'] and lifecycle['mastheadProgress'], 'Full-view reveal, header, and progress targets are connected to the newly mounted DOM')
             page.evaluate("window.scrollTo(0, document.querySelector('#lab').offsetTop + 1200)")
-            page.wait_for_timeout(120)
-            check(page.locator('.quick-navigator').count() == 1, 'Quick navigator remounts and responds to scrolling after returning to full view')
+            page.wait_for_timeout(220)
+            navigator_state = page.evaluate("""() => ({
+              scrollY: window.scrollY,
+              threshold: Math.max(560, window.innerHeight * .72),
+              navigatorCount: document.querySelectorAll('.quick-navigator').length,
+              appScrollHeight: document.documentElement.scrollHeight,
+              activeSection: document.querySelector('.main-nav a.active')?.getAttribute('href') || null
+            })""")
+            check(navigator_state['scrollY'] > navigator_state['threshold'] and navigator_state['navigatorCount'] == 1,
+                  f"Quick navigator remounts and responds to scrolling after returning to full view ({navigator_state})")
             header_hidden = page.locator('.site-header').evaluate("el => el.classList.contains('header-hidden')")
             check(header_hidden, 'Rebound masthead controller hides the header on downward scroll')
             page.evaluate('window.scrollTo(0, 0)')
@@ -121,7 +129,7 @@ def main() -> None:
             for iteration in range(2):
                 page.get_by_role('link', name='Recruiter view').click()
                 page.get_by_role('heading', name='King Art D. Pacumberto.', level=1).wait_for(timeout=8000)
-                page.get_by_role('button', name='Full portfolio').click()
+                page.get_by_role('button', name='Full portfolio', exact=True).click()
                 page.get_by_role('heading', name='From a question').wait_for(timeout=10000)
                 check(page.locator('#main-content').is_visible() and page.locator('.site-header').is_visible(), f'Repeated recruiter/full transition {iteration + 1} restores the complete portfolio')
 
