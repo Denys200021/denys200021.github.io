@@ -301,9 +301,9 @@ with sync_playwright() as p:
     assert "typeof IntersectionObserver === 'undefined'" in REVEAL_SOURCE.read_text()
 
     assert not errors, errors
-    page.screenshot(path='/mnt/data/motion-header-desktop.png',full_page=False)
+    page.screenshot(path=str(Path(tempfile.gettempdir()) / 'motion-header-desktop.png'),full_page=False)
     page.set_viewport_size({'width':390,'height':844})
-    page.screenshot(path='/mnt/data/motion-header-mobile.png',full_page=False)
+    page.screenshot(path=str(Path(tempfile.gettempdir()) / 'motion-header-mobile.png'),full_page=False)
 
     print('QA:boot preference', flush=True)
     # Validate boot preference behavior: default follows OS, v4 explicit setting overrides it.
