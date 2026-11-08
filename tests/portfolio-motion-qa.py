@@ -15,7 +15,7 @@ APP = (ROOT / 'src/App.tsx').read_text()
 # Compile the exact production reveal controller; no rewritten JS copy is used.
 with tempfile.TemporaryDirectory(prefix='legion-reveal-') as temp_dir:
     subprocess.run([
-        'tsc', str(REVEAL_SOURCE), str(MASTHEAD_SOURCE), '--target', 'ES2020', '--module', 'ES2020',
+        'tsc', '--ignoreConfig', str(REVEAL_SOURCE), str(MASTHEAD_SOURCE), '--target', 'ES2020', '--module', 'ES2020',
         '--lib', 'ES2020,DOM,DOM.Iterable', '--skipLibCheck', '--outDir', temp_dir,
     ], check=True, capture_output=True, text=True)
     reveal_js = (Path(temp_dir) / 'reveal.js').read_text()
