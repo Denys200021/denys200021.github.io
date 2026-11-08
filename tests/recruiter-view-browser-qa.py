@@ -102,8 +102,12 @@ def main() -> None:
             })""")
             check(lifecycle['revealReady'] or lifecycle['motionOff'], 'Full-view reveal runtime is reinitialized or deliberately disabled by reduced motion')
             check(lifecycle['revealTargets'] >= 20 and lifecycle['headerConnected'] and lifecycle['mastheadProgress'], 'Full-view reveal, header, and progress targets are connected to the newly mounted DOM')
-            page.evaluate("window.scrollTo(0, document.querySelector('#lab').offsetTop + 1200)")
-            page.wait_for_timeout(220)
+            page.evaluate("""() => {
+              const threshold = Math.max(560, window.innerHeight * .72);
+              const labTop = document.querySelector('#lab')?.getBoundingClientRect().top + window.scrollY || 0;
+              window.scrollTo({ top: Math.max(labTop + 1200, threshold + 600), behavior: 'instant' });
+            }""")
+            page.wait_for_function("document.querySelectorAll('.quick-navigator').length === 1", timeout=4000)
             navigator_state = page.evaluate("""() => ({
               scrollY: window.scrollY,
               threshold: Math.max(560, window.innerHeight * .72),
@@ -115,7 +119,7 @@ def main() -> None:
                   f"Quick navigator remounts and responds to scrolling after returning to full view ({navigator_state})")
             header_hidden = page.locator('.site-header').evaluate("el => el.classList.contains('header-hidden')")
             check(header_hidden, 'Rebound masthead controller hides the header on downward scroll')
-            page.evaluate('window.scrollTo(0, 0)')
+            page.evaluate("window.scrollTo({ top: 0, behavior: 'instant' })")
             page.wait_for_timeout(120)
             header_visible = not page.locator('.site-header').evaluate("el => el.classList.contains('header-hidden')")
             check(header_visible, 'Rebound masthead controller reveals the header on upward scroll')
@@ -133,6 +137,9 @@ def main() -> None:
                 page.get_by_role('heading', name='From a question').wait_for(timeout=10000)
                 check(page.locator('#main-content').is_visible() and page.locator('.site-header').is_visible(), f'Repeated recruiter/full transition {iteration + 1} restores the complete portfolio')
 
+            page.get_by_role('link', name='Recruiter view').click()
+            page.get_by_role('heading', name='King Art D. Pacumberto.', level=1).wait_for(timeout=8000)
+            page.locator('.recruiter-actions').wait_for(state='visible', timeout=5000)
             print_display = page.locator('.recruiter-actions').evaluate("el => getComputedStyle(el).display")
             page.emulate_media(media='print')
             print_hidden = page.locator('.recruiter-actions').evaluate("el => getComputedStyle(el).display") == 'none'
