@@ -118,20 +118,20 @@ with sync_playwright() as p:
         print(' - '+disclosure_id, flush=True)
         disclosure = disclosure_page.locator(f'#{disclosure_id}')
         panel = disclosure.locator(':scope > .disclosure-panel')
-        before = panel.evaluate('e => getComputedStyle(e).gridTemplateRows')
-        assert before == '0px', {'id': disclosure_id, 'gridRows': before}
+        before = panel.evaluate('e => ({display:getComputedStyle(e).display,opacity:getComputedStyle(e).opacity,height:e.getBoundingClientRect().height})')
+        assert before['display'] == 'grid' and float(before['opacity']) < .05 and before['height'] <= 1, {'id': disclosure_id, **before}
         disclosure.locator('summary').click()
         disclosure_page.wait_for_function('(id) => document.querySelector(`#${id}`).open', arg=disclosure_id)
-        disclosure_page.wait_for_function('(id) => getComputedStyle(document.querySelector(`#${id} > .disclosure-panel`)).gridTemplateRows !== "0px"', arg=disclosure_id)
+        disclosure_page.wait_for_function('(id) => { const e=document.querySelector(`#${id} > .disclosure-panel`); return e && e.getBoundingClientRect().height > 1; }', arg=disclosure_id)
         disclosure_page.evaluate('ms => new Promise(resolve => setTimeout(resolve, ms))', 520)
-        opened = panel.evaluate('e => ({rows:getComputedStyle(e).gridTemplateRows, opacity:getComputedStyle(e).opacity})')
-        assert float(opened['rows'].split()[0].replace('px','')) > 1 and float(opened['opacity']) > .95, {'id': disclosure_id, **opened}
+        opened = panel.evaluate('e => ({display:getComputedStyle(e).display,opacity:getComputedStyle(e).opacity,height:e.getBoundingClientRect().height})')
+        assert opened['display'] == 'grid' and opened['height'] > 1 and float(opened['opacity']) > .95, {'id': disclosure_id, **opened}
         disclosure.locator('summary').press('Enter')
         disclosure_page.wait_for_function('(id) => !document.querySelector(`#${id}`).open', arg=disclosure_id)
-        panel.evaluate('e => getComputedStyle(e).gridTemplateRows')  # start the close transition
+        panel.evaluate('e => ({height:e.getBoundingClientRect().height,opacity:getComputedStyle(e).opacity})')  # start the close transition
         disclosure_page.evaluate('ms => new Promise(resolve => setTimeout(resolve, ms))', 520)
-        closed = panel.evaluate('e => ({rows:getComputedStyle(e).gridTemplateRows, opacity:getComputedStyle(e).opacity})')
-        assert float(closed['rows'].split()[0].replace('px','')) < 1 and float(closed['opacity']) < .05, {'id': disclosure_id, **closed}
+        closed = panel.evaluate('e => ({display:getComputedStyle(e).display,opacity:getComputedStyle(e).opacity,height:e.getBoundingClientRect().height})')
+        assert closed['display'] == 'grid' and closed['height'] <= 1 and float(closed['opacity']) < .05, {'id': disclosure_id, **closed}
         disclosure_results.append({'id': disclosure_id, 'opened': opened, 'closed': closed, 'keyboardClose': True})
     disclosure_page.close()
 
