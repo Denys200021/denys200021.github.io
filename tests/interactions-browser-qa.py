@@ -13,7 +13,7 @@ def main() -> None:
     build = ROOT / ".qa-build"
     build.mkdir(exist_ok=True)
     compile_result = subprocess.run(
-        ["tsc", "src/sound.ts", "--target", "ES2022", "--module", "ES2022", "--lib", "ES2022,DOM", "--strict", "--outDir", str(build)],
+        ["tsc", "--ignoreConfig", "src/sound.ts", "--target", "ES2022", "--module", "ES2022", "--lib", "ES2022,DOM", "--strict", "--outDir", str(build)],
         cwd=ROOT, capture_output=True, text=True,
     )
     if compile_result.returncode:
