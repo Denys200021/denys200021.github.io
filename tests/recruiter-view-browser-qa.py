@@ -85,7 +85,7 @@ def main() -> None:
             page.get_by_role('button', name='Back to portfolio').click()
             page.get_by_role('link', name='Recruiter view').click()
             page.get_by_role('heading', name='King Art D. Pacumberto.', level=1).wait_for(timeout=8000)
-            page.get_by_role('button', name='Full portfolio').click()
+            page.get_by_role('button', name='Full portfolio', exact=True).click()
             page.get_by_role('heading', name='From a question').wait_for(timeout=10000)
             page.locator('#main-content').wait_for(state='visible', timeout=10000)
             page.locator('.site-header').wait_for(state='visible', timeout=10000)
