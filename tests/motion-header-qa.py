@@ -155,8 +155,8 @@ with sync_playwright() as p:
     header_reduced=page.locator('#site-header').evaluate('(e)=>({left:e.getBoundingClientRect().left,right:e.getBoundingClientRect().right,viewport:innerWidth,pointer:getComputedStyle(e).pointerEvents})')
     assert header_reduced['left'] >= 0 and header_reduced['right'] <= 391, header_reduced
     assert not errors, errors
-    page.screenshot(path='/mnt/data/motion-header-desktop.png',full_page=False)
-    page.screenshot(path='/mnt/data/motion-header-mobile.png',full_page=False)
+    page.screenshot(path=str(Path(tempfile.gettempdir()) / 'motion-header-desktop.png'),full_page=False)
+    page.screenshot(path=str(Path(tempfile.gettempdir()) / 'motion-header-mobile.png'),full_page=False)
     browser.close()
 
 print(json.dumps({
