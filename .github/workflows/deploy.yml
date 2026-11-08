@@ -1,4 +1,4 @@
-name: Verify and deploy portfolio to GitHub Pages
+name: Verify and deploy portfolio with GitHub Pages Jekyll
 
 on:
   push:
@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify:
+  verify-and-package:
     permissions:
       contents: read
       pages: write
@@ -23,31 +23,61 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
       - name: Install Node dependencies
         run: npm install --no-audit --no-fund
+
       - name: Install Lighthouse CI
         run: npm install --global @lhci/cli@0.16.x
+
       - name: Audit production dependencies
         run: npm audit --omit=dev --audit-level=high
+
       - name: Set up Python test environment
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+
       - name: Install browser test dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements-test.txt
           python -m playwright install --with-deps chromium
-      - name: Run source, type, build, and production asset budgets
+
+      - name: Run complete source, type, build, and browser verification
         run: npm run verify
+
       - name: Run Lighthouse audits on the full site and recruiter view
         run: lhci autorun
+
+      # Compile React and TypeScript with Vite before handing static output to Jekyll.
+      # Jekyll packages dist/ for GitHub Pages; it does not compile the application.
+      - name: Add GitHub Pages Jekyll configuration to the Vite output
+        run: cp .github/jekyll/_config.yml dist/_config.yml
+
+      - name: Package the Vite output with GitHub Pages Jekyll
+        uses: actions/jekyll-build-pages@v1
+        with:
+          source: ./dist
+          destination: ./_site
+          verbose: true
+
+      - name: Validate the Jekyll Pages artifact
+        run: |
+          test -s _site/index.html
+          test -d _site/assets
+          test -s _site/King-Art-Pacumberto-CV.pdf
+          test -s _site/King-Art-Pacumberto-Resume.pdf
+          touch _site/.nojekyll
+
       - name: Save private Lighthouse reports to the workflow run
         if: always() && hashFiles('.lighthouseci/reports/**/*.html') != ''
         uses: actions/upload-artifact@v4
@@ -55,11 +85,12 @@ jobs:
           name: lighthouse-reports
           path: .lighthouseci/reports
           retention-days: 14
-      - name: Upload verified production build
+
+      - name: Upload Jekyll-packaged Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4
         with:
-          path: dist
+          path: ./_site
 
   deploy:
     if: github.event_name != 'pull_request'
@@ -70,8 +101,8 @@ jobs:
       pages: write
       id-token: write
     runs-on: ubuntu-latest
-    needs: verify
+    needs: verify-and-package
     steps:
-      - name: Deploy verified Pages artifact
+      - name: Deploy verified Jekyll Pages artifact
         id: deployment
         uses: actions/deploy-pages@v4

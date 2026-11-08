@@ -107,6 +107,18 @@ for name in unknown_workflow_scripts:
     print(f"  UNKNOWN npm run {name}")
 check("npm run verify" in workflow and "lhci autorun" in workflow and "npm run test:interactions" not in workflow,
       "Deployment workflow delegates the complete test matrix to one release command and runs Lighthouse afterward")
+check("uses: actions/jekyll-build-pages@v1" in workflow and "source: ./dist" in workflow and "destination: ./_site" in workflow,
+      "GitHub Pages Jekyll packages the compiled Vite dist folder rather than raw React/TypeScript source")
+check("path: ./_site" in workflow and "test -s _site/index.html" in workflow and "test -d _site/assets" in workflow,
+      "The uploaded Pages artifact is the validated Jekyll output with root entry and Vite assets")
+jekyll_config = read(".github/jekyll/_config.yml")
+check('url: "https://legioniz.github.io"' in jekyll_config and 'baseurl: ""' in jekyll_config,
+      "Jekyll URL metadata matches the Vite root-site base and canonical URL")
+check(workflow.index("npm run verify") < workflow.index("actions/jekyll-build-pages@v1") < workflow.index("actions/upload-pages-artifact@v4"),
+      "Build/verification, Jekyll packaging, and Pages artifact upload occur in the required order")
+check("cache: npm" not in workflow, "Node setup does not require an uncommitted package-lock.json for cache key generation")
+check("needs: verify-and-package" in workflow and "id-token: write" in workflow and "pages: write" in workflow,
+      "Pages deployment waits for verification and has the documented Pages/id-token permissions")
 release_runner = read("scripts/portfolio.mjs")
 check(all(f"['run', '{name}']" in release_runner for name in ["test:adaptive", "test:integrity", "test:features", "test:production-source", "test:design-browser", "typecheck", "build:app", "audit:bundle", "test:interactions", "test:motion", "test:recruiter-browser"]),
       "Release verification runs source, security, build, bundle, desktop/touch, motion, and compiled recruiter browser suites")

@@ -84,3 +84,11 @@ A portrait supplied by the owner on 2026-11-08 is included in the profile sectio
 ## Original uploaded resume PDF
 
 The owner supplied `King_Art_Pacumberto_Resume_Updated (1)(3).pdf` on 2026-11-08 and explicitly asked for that exact resume to be available from the portfolio. It is bundled byte-for-byte as `public/King-Art-Pacumberto-Resume.pdf`. The source PDF includes the phone number shown in the document. The redesigned public-safe CV PDF is the phone-free alternative. The editable Word/DOCX copy has been removed from the current public release.
+
+
+## GitHub Pages Jekyll deployment
+
+- GitHub Docs — [Using custom workflows with GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages): workflow permissions, Pages artifact upload, and deployment requirements.
+- Official GitHub Action — [actions/jekyll-build-pages](https://github.com/actions/jekyll-build-pages): Jekyll packaging action, including its configurable `source` and `destination` inputs.
+
+The current project is a React/Vite application. The workflow compiles it to `dist/`, then uses the official Jekyll action to package that generated static site into `_site/`. Jekyll is not used to compile the React/TypeScript source.

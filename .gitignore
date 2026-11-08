@@ -21,3 +21,8 @@ coverage/
 playwright-report/
 test-results/
 .coverage
+
+# Jekyll output and local Ruby tooling
+_site/
+.jekyll-cache/
+.bundle/

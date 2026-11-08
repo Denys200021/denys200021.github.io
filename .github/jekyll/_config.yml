@@ -1,0 +1,11 @@
+# GitHub Pages Jekyll wrapper for the already-built Vite application.
+# Copied into dist/ immediately before the Jekyll packaging action.
+title: "King Art D. Pacumberto | Portfolio"
+description: "Software, systems, and creative technology portfolio of King Art D. Pacumberto."
+url: "https://legioniz.github.io"
+baseurl: ""
+markdown: kramdown
+permalink: pretty
+timezone: Asia/Manila
+exclude:
+  - "_config.yml"

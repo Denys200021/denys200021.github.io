@@ -28,9 +28,9 @@ const expectedFiles = [
   '.github/workflows/deploy.yml', '.github/dependabot.yml',
   'README.md', 'SOURCES.md', 'BACKEND-SETUP.md', 'CONTENT-CHECKLIST.md', 'PRODUCTION-QUALITY.md', 'RECRUITER-VIEW.md',
   'UI-MOTION-DESIGN.md', 'VISUAL-DESIGN-SYSTEM.md', 'VIEW-TRANSITION-LIFECYCLE.md',
-  'docs/releases/README.md', 'FULL-SYSTEM-AUDIT-2026-11-09.md',
+  'docs/releases/README.md', 'FULL-SYSTEM-AUDIT-2026-11-09.md', '.github/jekyll/_config.yml', 'GITHUB-PAGES-JEKYLL-QA-2026-11-09.md', 'docs/releases/GITHUB-PAGES-JEKYLL-QA-2026-11-09.md',
 ]
-const excludedSnapshotNames = new Set(['.git', 'node_modules', 'dist', '.portfolio-backups', '.lighthouseci', 'coverage', 'playwright-report', 'test-results', '__pycache__', '.qa-build', '.vite'])
+const excludedSnapshotNames = new Set(['.git', 'node_modules', 'dist', '.portfolio-backups', '.lighthouseci', 'coverage', 'playwright-report', 'test-results', '__pycache__', '.qa-build', '.vite', '_site', '.jekyll-cache', '.bundle'])
 const excludedSnapshotFilePattern = /\.(?:py[co]|tsbuildinfo)$/i
 const excludedSecretPattern = /^\.env(?:\..+)?$/i
 
@@ -227,7 +227,10 @@ async function check() {
   const vite = await read('vite.config.ts')
   log(vite.includes('port: 5174') && vite.includes('port: 4174') && vite.includes('strictPort: true'), 'Development and preview ports remain isolated from 5173')
   const workflow = await read('.github/workflows/deploy.yml')
-  log(workflow.includes('npm run verify') && workflow.includes('actions/deploy-pages@v4') && workflow.includes('actions/upload-pages-artifact@v4'), 'GitHub Pages workflow verifies, uploads, and deploys a production artifact')
+  log(workflow.includes('npm run verify') && workflow.includes('actions/configure-pages@v5') && workflow.includes('actions/jekyll-build-pages@v1') && workflow.includes('actions/deploy-pages@v4') && workflow.includes('actions/upload-pages-artifact@v4') && workflow.includes('source: ./dist') && workflow.includes('destination: ./_site') && workflow.includes('path: ./_site'), 'GitHub Pages workflow verifies Vite output, packages it with Jekyll, uploads _site, and deploys it')
+  const jekyllConfig = await read('.github/jekyll/_config.yml')
+  log(jekyllConfig.includes('url: "https://legioniz.github.io"') && jekyllConfig.includes('baseurl: ""') && jekyllConfig.includes('timezone: Asia/Manila'), 'Jekyll wrapper metadata matches the root GitHub Pages user-site URL')
+  log(workflow.indexOf('npm run verify') < workflow.indexOf('actions/jekyll-build-pages@v1') && workflow.indexOf('actions/jekyll-build-pages@v1') < workflow.indexOf('actions/upload-pages-artifact@v4'), 'Vite verification/build completes before Jekyll packaging and Pages artifact upload')
 
   const publicFiles = await readdir(path.join(ROOT, 'public'))
   log(!publicFiles.some((name) => /private|phone|personal-cv/i.test(name)), 'No private CV file is stored in public/')

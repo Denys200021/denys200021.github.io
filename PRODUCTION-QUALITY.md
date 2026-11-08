@@ -53,3 +53,8 @@ The portfolio release pipeline now treats production quality as a repeatable gat
 ## Design and motion regression gate
 
 The `test:design-browser` job loads the production stylesheet into Chromium and checks hero mask state, full and recruiter timeline rails, selected Network Lab motion, keyboard focus visibility, motion-off content visibility, economy-profile timings, reduced-motion timing, and 320px overflow. It deliberately reports itself as a stylesheet/browser fixture; the compiled React application is still tested separately by recruiter and interaction browser suites after Vite build.
+
+
+## GitHub Pages Jekyll packaging
+
+The application is compiled by Vite into `dist/` first. The workflow intentionally omits setup-node npm caching until a package lockfile is committed, avoiding a cache setup failure on a repository that has no lockfile. The GitHub Actions workflow then copies `.github/jekyll/_config.yml` into that generated output and invokes `actions/jekyll-build-pages@v1` with `source: ./dist` and `destination: ./_site`. The Jekyll action packages the already-built static application; it does not compile React or TypeScript. The workflow validates `_site/index.html`, assets, and the public PDF resources before uploading `_site/` to GitHub Pages.

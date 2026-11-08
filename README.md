@@ -46,7 +46,9 @@ Install the test-only Python dependencies with `python -m pip install -r require
 
 ## Deploy to GitHub Pages
 
-The included workflow is configured for the root GitHub Pages user site `https://legioniz.github.io/`. Follow [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md): create the empty public repository `Legioniz.github.io`, then run `PUSH-TO-GITHUB.cmd` from the extracted folder. In **Settings -> Pages**, select **GitHub Actions** as the source. The workflow configures Pages, installs dependencies, runs the release verification and Lighthouse audits, and deploys the `dist/` artifact only after verification passes.
+The included workflow is configured for the root GitHub Pages user site `https://legioniz.github.io/` and uses the **GitHub Pages Jekyll** build action. Follow [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md): create the empty public repository `Legioniz.github.io`, then run `PUSH-TO-GITHUB.cmd` from the extracted folder. In **Settings -> Pages**, select **GitHub Actions** as the source. The workflow first runs the full React/Vite verification and build into `dist/`, then copies `.github/jekyll/_config.yml` into that generated folder and invokes `actions/jekyll-build-pages@v1` with `source: ./dist` and `destination: ./_site`. It uploads and deploys the Jekyll-packaged `./_site` artifact only after verification passes. Jekyll packages the built static output; it does not replace or compile the React/Vite source. Because this complete workflow is already included, do not add a second Jekyll template workflow in the repository.
+
+See [GITHUB-PAGES-JEKYLL-QA-2026-11-09.md](./GITHUB-PAGES-JEKYLL-QA-2026-11-09.md) for the exact Jekyll packaging sequence and verification boundaries.
 
 The public URLs are `https://legioniz.github.io/` (full portfolio) and `https://legioniz.github.io/?view=recruiter` (Recruiter View). `START-PORTFOLIO-LAN.cmd` launches a same-Wi-Fi preview; it is not a public Internet tunnel. This source package intentionally omits `node_modules/` and `dist/`.
 
