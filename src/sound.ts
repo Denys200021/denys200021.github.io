@@ -250,7 +250,7 @@ export function installInteractionSounds(isEnabled: () => boolean): () => void {
   }
 
   document.addEventListener('pointerdown', onPointerDown, { passive: true })
-  document.addEventListener('keydown', onKeyDown)
+  document.addEventListener('keydown', onKeyDown, true)
   document.addEventListener('pointerover', onPointerOver, { passive: true })
   document.addEventListener('focusin', onFocusIn)
   document.addEventListener('change', onChange)
@@ -258,7 +258,7 @@ export function installInteractionSounds(isEnabled: () => boolean): () => void {
   document.addEventListener('click', onClick, { passive: true })
   return () => {
     document.removeEventListener('pointerdown', onPointerDown)
-    document.removeEventListener('keydown', onKeyDown)
+    document.removeEventListener('keydown', onKeyDown, true)
     document.removeEventListener('pointerover', onPointerOver)
     document.removeEventListener('focusin', onFocusIn)
     document.removeEventListener('change', onChange)
