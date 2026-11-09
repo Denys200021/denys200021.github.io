@@ -66,9 +66,9 @@ check(parser.metas.get('referrer') == 'strict-origin-when-cross-origin', 'Extern
 check(parser.metas.get('og:url') == 'https://legioniz.github.io/', 'Open Graph canonical URL is absolute and stable')
 check(parser.metas.get('twitter:card') == 'summary_large_image' and parser.metas.get('og:image', '').endswith('/og-card.png') and parser.metas.get('og:image:type') == 'image/png', 'Social sharing metadata uses a crawler-compatible PNG preview')
 check(any(link.get('rel') == 'canonical' and link.get('href') == 'https://legioniz.github.io/' for link in parser.links), 'Canonical URL is linked in document head')
-check(any(link.get('rel') == 'icon' and link.get('type') == 'image/x-icon' and 'favicon.ico?v=20261109-2' in link.get('href', '') for link in parser.links), 'Browser-first ICO favicon is linked with a fresh cache key')
-check(any(link.get('rel') == 'icon' and link.get('type') == 'image/png' and 'favicon-32.png?v=20261109-2' in link.get('href', '') for link in parser.links), '32px PNG favicon fallback is linked')
-check(any(link.get('rel') == 'icon' and link.get('type') == 'image/svg+xml' and 'favicon.svg?v=20261109-2' in link.get('href', '') for link in parser.links), 'Scalable SVG favicon is linked')
+check(any(link.get('rel') == 'icon' and link.get('type') == 'image/x-icon' and 'favicon.ico?v=20261109-3' in link.get('href', '') for link in parser.links), 'Browser-first ICO favicon is linked with a fresh cache key')
+check(any(link.get('rel') == 'icon' and link.get('type') == 'image/png' and 'favicon-32.png?v=20261109-3' in link.get('href', '') for link in parser.links), '32px PNG favicon fallback is linked')
+check(any(link.get('rel') == 'icon' and link.get('type') == 'image/svg+xml' and 'favicon.svg?v=20261109-3' in link.get('href', '') for link in parser.links), 'Scalable SVG favicon is linked')
 try:
     structured = json.loads(parser.jsonld)
     check(structured.get('@type') == 'Person' and structured.get('name') == 'King Art D. Pacumberto', 'Person structured data is valid JSON-LD and identifies the site owner')
@@ -169,7 +169,7 @@ edge = (ROOT / 'supabase/functions/portfolio-submit/index.ts').read_text(encodin
 check('SUPABASE_SERVICE_ROLE_KEY' not in backend and 'service_role' not in backend, 'Frontend backend configuration contains no service-role credential')
 check('enable row level security' in sql.lower() and 'is_portfolio_admin' in sql, 'Database migration retains RLS and administrator policy enforcement')
 check('verifyTurnstile' in edge and 'consume_portfolio_quota' in edge and 'PORTFOLIO_ALLOWED_ORIGIN' in edge, 'Server-side intake retains CAPTCHA, rate quota, and origin restrictions')
-check("const CACHE_NAME = 'legion-portfolio-shell-v9'" in (ROOT / 'public/sw.js').read_text(encoding='utf-8'), 'Service worker uses a new cache version for this release')
+check("const CACHE_NAME = 'legion-portfolio-shell-v10'" in (ROOT / 'public/sw.js').read_text(encoding='utf-8'), 'Service worker uses a new cache version for this release')
 check('service_role' not in recruiter.lower(), 'Recruiter chunk has no privileged backend credential references')
 
 check('--content-measure: 68ch' in css and '--section-space: clamp(72px, 9vw, 132px)' in css and '--type-kicker' in css, 'Shared design system includes readable measure, responsive section spacing, and semantic typography tokens')
