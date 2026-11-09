@@ -32,9 +32,9 @@ git push -u origin main
 
 ## 3. Enable GitHub Pages
 
-Open the repository's **Settings → Pages → Build and deployment** and choose **GitHub Actions** as the source. The included workflow uses the official **GitHub Pages Jekyll** action (`actions/jekyll-build-pages@v1`), equivalent to the Jekyll workflow template’s build step. It runs `npm run verify` to compile the React/Vite application into `dist/`, copies `.github/jekyll/_config.yml` into that generated output, then runs `actions/jekyll-build-pages@v1` with `source: ./dist` and `destination: ./_site`. The workflow uploads `./_site` through `actions/upload-pages-artifact@v4` and deploys it with `actions/deploy-pages@v4` after all checks pass. Since this package already contains the complete Jekyll-enabled workflow, do not create a second workflow from the template picker; use the existing workflow to avoid two competing deployments. This hybrid sequence is intentional: Vite compiles React/TypeScript; Jekyll packages the already-built static files for GitHub Pages.
+Open the repository's **Settings → Pages → Build and deployment** and choose **GitHub Actions** as the source. The existing workflow runs the full source, type, build, browser, security, and Lighthouse checks. It then validates the generated `dist/` directory, including its root `index.html`, hashed JavaScript and CSS bundles, resume PDFs, and `.nojekyll` marker. The workflow uploads `./dist` directly with `actions/upload-pages-artifact@v4` and deploys it with `actions/deploy-pages@v4`. It deliberately skips Jekyll: Vite has already compiled React and TypeScript, so the compiled static output should be published without an extra packaging pass.
 
-Follow **Actions → Verify and deploy portfolio with GitHub Pages Jekyll**. A green completed run means GitHub accepted the deployment. The site will then be available at the URLs above. First publication and DNS/edge propagation can take several minutes.
+Follow **Actions → Verify and deploy portfolio**. A green completed run means GitHub accepted the deployment. The site will then be available at the URLs above. First publication and edge-cache propagation can take several minutes.
 
 ## 4. Public live preview on the same Wi-Fi
 
