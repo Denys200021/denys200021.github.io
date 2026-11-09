@@ -7,7 +7,7 @@ The portfolio should feel like a personal technical field journal: part engineer
 ## Visual identity
 
 - **Primary structure:** warm paper/ink surfaces, fine rules, chapter labels, folio numbers, and grid annotations.
-- **Primary accent:** signal coral, used for focus, actions, active states, and selected labels. Dark mode uses bright coral (`#ff765e`); light mode uses a deeper coral (`#a34b36`) to maintain text contrast against warm paper.
+- **Primary accent:** signal coral, used for focus, actions, active states, and selected labels. Dark mode uses bright coral (`#e87961`); light mode uses a deeper coral (`#a94837`) to maintain text contrast against warm paper.
 - **Secondary accent:** muted sea-glass blue/teal, used for technical diagrams and secondary emphasis.
 - **Typography:** Space Grotesk for display, Manrope for readable body copy, and DM Mono for annotations and metadata.
 - **Geometry:** rectangular cards with small corner radii, crosshair marks, dashed separators, circular system maps, and an asymmetric 12-column project layout. Each portfolio area uses a different composition: cover page, editorial profile, case-study board, parts-tray toolkit, timeline/index cards, and studio contact panel.
@@ -34,7 +34,7 @@ The portfolio should feel like a personal technical field journal: part engineer
 ## Accessibility and performance
 
 - Keep visible focus, skip-to-content, labels on controls, and contrast in both themes.
-- Respect `prefers-reduced-motion`; the operating-system setting takes precedence over a stored preference. The user control offers an additional pause mechanism when system motion is allowed.
+- Respect `prefers-reduced-motion` by default. Visitors can explicitly resume decorative motion from the site control; a separate pause remains available at all times.
 - Prefer transform/opacity for transitions. Keep Canvas particle count and frame rate capped, pause off-screen, and avoid unnecessary runtime packages.
 - Do not convey state through color alone; use text and shape/state changes as well.
 - Keep layout responsive without horizontal scrolling at 320px and above. On tablet and phone widths, the hero changes from vertically centered desktop flex composition to normal block flow; its display headline and orbit scale down on very narrow screens.
@@ -72,4 +72,4 @@ The display / body / annotation roles remain Space Grotesk, Manrope, and DM Mono
 - Balanced quality shortens hero and reveal motion.
 - Economy quality removes nonessential card lifts and corner flourish animation.
 - Coarse-pointer layouts suppress hover-only depth and use touch-appropriate interactions.
-- The system reduced-motion preference and the site's motion-off setting expose all content immediately. A visitor's explicit opt-in is required to override the operating-system motion preference.
+- The system reduced-motion preference and the site's motion-off setting expose all content immediately. Visitors can explicitly resume motion from the site control if they prefer the full animation experience.
