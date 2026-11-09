@@ -3887,3 +3887,13 @@ body {
   .hero-actions .button { min-height: 42px; font-size: 10px; }
   .page-width { width: calc(100% - 28px); }
 }
+
+.recruiter-view :is(
+  small, .recruiter-role, .recruiter-eyebrow, .recruiter-tags > span, .recruiter-index,
+  .recruiter-footer, .recruiter-experience-card > div > span,
+  .recruiter-experience-card > div > small, .recruiter-education-item > span,
+  .recruiter-project-type, .recruiter-snapshot small
+) {
+  font-size: clamp(10px, .72em, 12px);
+  line-height: 1.5;
+}
