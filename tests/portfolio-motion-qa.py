@@ -23,7 +23,7 @@ with tempfile.TemporaryDirectory(prefix='legion-reveal-') as temp_dir:
     reveal_js = reveal_js.replace('export function installScrollReveal', 'function installScrollReveal')
     masthead_js = masthead_js.replace('export function installMastheadScrollBehavior', 'function installMastheadScrollBehavior')
 
-HTML = f'''<!doctype html><html data-theme="dark" data-quality="full" data-pointer="fine" data-motion="on" data-motion-override="system"><head>
+HTML = f'''<!doctype html><html data-theme="dark" data-quality="full" data-pointer="fine" data-motion="on" data-motion-override="on"><head>
 <meta name="viewport" content="width=device-width,initial-scale=1"><style>{CSS}</style><style>
 body{{min-height:4300px;padding-top:100px}}
 main{{width:min(1200px,calc(100% - 36px));margin:auto}}
@@ -137,7 +137,7 @@ with sync_playwright() as p:
 
     print('QA:toggle contract', flush=True)
     # Motion toggle is an enabled control even when the OS preference requests reduced motion.
-    page.evaluate("document.documentElement.dataset.motionOverride='system'; document.documentElement.dataset.motion='off'")
+    page.evaluate("document.documentElement.dataset.motionOverride='off'; document.documentElement.dataset.motion='off'")
     motion_control = page.locator('.motion-toggle')
     # The app's production markup is checked at source level; this fixture verifies the intended control contract.
     motion_markup = re.search(r'<button[\s\S]*?className="icon-button motion-toggle"[\s\S]*?</button>', APP)
@@ -184,14 +184,11 @@ with sync_playwright() as p:
     assert timeout_fallback['opacity']=='1', timeout_fallback
 
     print('QA:motion on by default and visitor pause', flush=True)
-    # The OS reduced-motion preference is honored until the visitor explicitly resumes motion.
+    # The site default remains animated even when the operating system requests reduced motion.
     page.emulate_media(reduced_motion='reduce')
-    page.evaluate("(() => { document.documentElement.dataset.motionOverride='system'; document.documentElement.dataset.motion='off'; window.__revealCleanup(); window.__revealCleanup=window.__installScrollReveal({enabled:false,scope:document.getElementById('main-content')}); return true; })()")
-    system_reduced=target.evaluate("e => ({duration:getComputedStyle(e).transitionDuration, opacity:getComputedStyle(e).opacity, ready:document.documentElement.dataset.motionOverride})")
-    assert system_reduced['ready']=='system' and system_reduced['opacity']=='1', system_reduced
-
-    # A visitor can explicitly resume motion even when the operating system requests reduced motion.
     page.evaluate("(() => { document.documentElement.dataset.motionOverride='on'; document.documentElement.dataset.motion='on'; window.__revealCleanup(); window.__revealCleanup=window.__installScrollReveal({enabled:true,scope:document.getElementById('main-content')}); return true; })()")
+    default_motion=target.evaluate("e => ({duration:getComputedStyle(e).transitionDuration, opacity:getComputedStyle(e).opacity, ready:document.documentElement.dataset.motionOverride})")
+    assert default_motion['ready']=='on' and any(float(value.removesuffix('s')) > 0 for value in default_motion['duration'].split(',')), default_motion
     page.wait_for_function("document.documentElement.dataset.revealReady === 'true'")
     page.wait_for_function("document.querySelector('#reveal-target').dataset.revealState !== undefined")
     default_motion=target.evaluate("e => ({duration:getComputedStyle(e).transitionDuration, opacity:getComputedStyle(e).opacity, ready:document.documentElement.dataset.motionOverride})")
@@ -310,7 +307,7 @@ with sync_playwright() as p:
     page.screenshot(path=str(Path(tempfile.gettempdir()) / 'motion-header-mobile.png'),full_page=False)
 
     print('QA:boot preference', flush=True)
-    # Validate boot behavior: normal settings default on, OS reduced motion is respected, and explicit v6 choices override the system.
+    # Validate boot behavior: motion defaults on in every system profile, and only an explicit v6 pause turns it off.
     pref_page=browser.new_page(reduced_motion='no-preference')
     pref_page.set_content('<!doctype html><html><head><meta name=theme-color content=#101619></head><body></body></html>')
     import re
@@ -328,11 +325,11 @@ with sync_playwright() as p:
     pref_page.add_script_tag(content=inline_scripts[0])
     default_motion=pref_page.locator('html').get_attribute('data-motion')
     default_override=pref_page.locator('html').get_attribute('data-motion-override')
-    assert default_motion == 'on' and default_override == 'system', {'stale-v1-v5-settings-ignored': True, 'data-motion': default_motion, 'override': default_override}
+    assert default_motion == 'on' and default_override == 'on', {'stale-v1-v5-settings-ignored': True, 'data-motion': default_motion, 'override': default_override}
     pref_page.emulate_media(reduced_motion='reduce')
     pref_page.add_script_tag(content=inline_scripts[0])
     os_motion=pref_page.locator('html').get_attribute('data-motion')
-    assert os_motion == 'off' and pref_page.locator('html').get_attribute('data-motion-override') == 'system', {'system-reduced-motion': os_motion}
+    assert os_motion == 'on' and pref_page.locator('html').get_attribute('data-motion-override') == 'on', {'system-reduced-motion-default': os_motion}
     pref_page.evaluate("window.__mockMotionStore['legion-portfolio-motion-v6'] = 'on'")
     pref_page.add_script_tag(content=inline_scripts[0])
     explicit_on=pref_page.locator('html').get_attribute('data-motion')
@@ -349,7 +346,7 @@ print(json.dumps({
   'disclosures':disclosure_results,
   'KA_responsive':brand_metrics,
   'masthead':{'downScroll':header_hidden,'upScroll':header_revealed,'topGuard':top_header,'mobileMenuGuard':menu_header,'motionOffGuard':static_header,'mobileDownScroll':mobile_header_hidden},
-  'preferenceMigration':'old v1-v5 keys ignored; motion defaults on for normal system settings; v6 stores explicit visitor choices',
+  'preferenceMigration':'old v1-v5 keys ignored; motion defaults on across system profiles; v6 stores explicit visitor choices',
   'integration':'App uses real IntersectionObserver reveals and the separately browser-tested production masthead controller',
   'browserErrors':errors,
   'result':'PASS'
