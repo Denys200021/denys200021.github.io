@@ -84,12 +84,12 @@ jobs:
           test -f _site/.nojekyll
 
           # Reject the raw source shell: Pages must serve compiled, hashed assets.
-          grep -Eq '<script[^>]+src="/assets/index-[^"]+\\.js"' _site/index.html
-          grep -Eq '<link[^>]+href="/assets/index-[^"]+\\.css"' _site/index.html
+          grep -Eq '<script[^>]+src="/assets/index-[^"]+\.js"' _site/index.html
+          grep -Eq '<link[^>]+href="/assets/index-[^"]+\.css"' _site/index.html
           ! grep -q 'src="/src/main.tsx"' _site/index.html
 
-          js_asset="$(grep -oE '/assets/index-[^"]+\\.js' _site/index.html | head -n 1 | sed 's#^/##')"
-          css_asset="$(grep -oE '/assets/index-[^"]+\\.css' _site/index.html | head -n 1 | sed 's#^/##')"
+          js_asset="$(grep -oE '/assets/index-[^"]+\.js' _site/index.html | head -n 1 | sed 's#^/##')"
+          css_asset="$(grep -oE '/assets/index-[^"]+\.css' _site/index.html | head -n 1 | sed 's#^/##')"
           test -n "$js_asset" && test -s "_site/$js_asset"
           test -n "$css_asset" && test -s "_site/$css_asset"
 
