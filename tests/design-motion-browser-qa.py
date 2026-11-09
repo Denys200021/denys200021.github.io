@@ -12,7 +12,7 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / 'src/styles.css').read_text(encoding='utf-8')
-HTML = r'''<!doctype html><html lang="en" data-theme="dark" data-motion="on" data-motion-override="system" data-quality="full" data-pointer="fine"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+HTML = r'''<!doctype html><html lang="en" data-theme="dark" data-motion="on" data-motion-override="on" data-quality="full" data-pointer="fine"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
 <main class="page-width">
   <section class="hero-section"><div class="hero-content"><p class="hero-pretitle" data-hero-sequence="eyebrow">FIELD NOTES / 001</p><h1 class="hero-title" aria-label="From a question to working systems."><span class="title-line" data-hero-line aria-hidden="true">From a question</span><span class="title-line" data-hero-line aria-hidden="true">to working</span><span class="title-line" data-hero-line aria-hidden="true">systems.</span></h1><p data-hero-sequence="description">Hero description</p><div data-hero-sequence="actions"><button>Explore</button></div></div><div class="hero-visual motion-active" data-motion-zone><div class="visual-plate"></div></div></section>
   <div class="timeline motion-active"><article class="timeline-item"><span class="timeline-marker"></span></article></div>
@@ -90,9 +90,12 @@ def main() -> None:
         check(not overflow, 'Design fixture has no horizontal overflow at 320px')
 
         page.emulate_media(reduced_motion='reduce')
-        page.evaluate("document.documentElement.dataset.motionOverride='system'; document.documentElement.dataset.motion='off'")
+        page.evaluate("document.documentElement.dataset.motionOverride='on'; document.documentElement.dataset.motion='on'")
         system_animation = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationName')
-        check(system_animation == 'none', 'System reduced-motion preference disables decorative text animation by default')
+        check(system_animation == 'hero-line-enter', 'Default motion remains enabled even when the OS requests reduced motion')
+        page.evaluate("document.documentElement.dataset.motionOverride='off'; document.documentElement.dataset.motion='off'")
+        paused_by_visitor = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationName')
+        check(paused_by_visitor == 'none', 'Visitor can explicitly pause motion regardless of the OS preference')
         page.evaluate("document.documentElement.dataset.motionOverride='on'; document.documentElement.dataset.motion='on'")
         reduced_duration = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationDuration')
         reduced_animation = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationName')
