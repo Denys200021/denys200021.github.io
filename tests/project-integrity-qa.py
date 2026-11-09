@@ -129,7 +129,7 @@ check("legion-portfolio-shell-v8" in service_worker and "favicon.ico?v=20261109-
       "Service-worker cache version and precache list refresh the favicon set")
 check("legion-portfolio-motion-v5" in html_shell and "savedMotion === 'off' ? 'off' : 'on'" in html_shell,
       "Early boot enables motion unless a visitor has explicitly paused it")
-check("legion-portfolio-motion-v5" in read("src/App.tsx") and "savedMotion !== 'off'" in read("src/PortfolioFeatures.tsx"),
+check("legion-portfolio-motion-v5" in read("src/App.tsx") and "localStorage.getItem('legion-portfolio-motion-v5') !== 'off'" in read("src/PortfolioFeatures.tsx"),
       "React motion controls and the intro sequence share the motion-on preference")
 adaptive_source = read("src/adaptive.ts")
 check("document.documentElement.dataset.motion === 'off'" in adaptive_source and "prefers-reduced-motion" not in adaptive_source,
