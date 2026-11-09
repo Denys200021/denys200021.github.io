@@ -107,15 +107,12 @@ for name in unknown_workflow_scripts:
     print(f"  UNKNOWN npm run {name}")
 check("npm run verify" in workflow and "lhci autorun" in workflow and "npm run test:interactions" not in workflow,
       "Deployment workflow delegates the complete test matrix to one release command and runs Lighthouse afterward")
-check("uses: actions/jekyll-build-pages@v1" in workflow and "source: ./dist" in workflow and "destination: ./_site" in workflow,
-      "GitHub Pages Jekyll packages the compiled Vite dist folder rather than raw React/TypeScript source")
-check("path: ./_site" in workflow and "test -s _site/index.html" in workflow and "test -d _site/assets" in workflow,
-      "The uploaded Pages artifact is the validated Jekyll output with root entry and Vite assets")
-jekyll_config = read(".github/jekyll/_config.yml")
-check('url: "https://legioniz.github.io"' in jekyll_config and 'baseurl: ""' in jekyll_config,
-      "Jekyll URL metadata matches the Vite root-site base and canonical URL")
-check(workflow.index("npm run verify") < workflow.index("actions/jekyll-build-pages@v1") < workflow.index("actions/upload-pages-artifact@v4"),
-      "Build/verification, Jekyll packaging, and Pages artifact upload occur in the required order")
+check("path: ./dist" in workflow and "test -s dist/index.html" in workflow and "test -d dist/assets" in workflow and "test -f dist/.nojekyll" in workflow,
+      "The Pages artifact is validated directly from the compiled Vite dist folder")
+check("uses: actions/jekyll-build-pages@v1" not in workflow and "destination: ./_site" not in workflow and "path: ./_site" not in workflow,
+      "The deployment bypasses Jekyll packaging and publishes the Vite build without rewriting its files")
+check(workflow.index("npm run verify") < workflow.index("Validate the production Pages artifact") < workflow.index("actions/upload-pages-artifact@v4"),
+      "Build/verification, direct dist validation, and Pages artifact upload occur in the required order")
 check("cache: npm" in workflow and "npm ci --no-audit --no-fund" in workflow and (ROOT / "package-lock.json").is_file(), "Node setup uses npm caching with the committed lockfile and reproducible npm ci installation")
 check("needs: verify-and-package" in workflow and "id-token: write" in workflow and "pages: write" in workflow,
       "Pages deployment waits for verification and has the documented Pages/id-token permissions")
