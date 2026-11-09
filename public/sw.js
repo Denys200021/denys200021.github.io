@@ -6,9 +6,9 @@ const SHELL_URLS = [
   '/sitemap.xml',
   '/site.webmanifest?v=20261109-3',
   '/og-card.png',
-  '/favicon.svg?v=20261109-2',
-  '/favicon-32.png?v=20261109-2',
-  '/favicon.ico?v=20261109-2',
+  '/favicon.svg?v=20261109-3',
+  '/favicon-32.png?v=20261109-3',
+  '/favicon.ico?v=20261109-3',
 ];
 const API_PREFIXES = ['/rest/v1/', '/auth/v1/', '/functions/v1/', '/storage/v1/'];
 
