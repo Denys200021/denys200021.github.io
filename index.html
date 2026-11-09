@@ -9,11 +9,12 @@
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="author" content="King Art D. Pacumberto" />
     <link rel="canonical" href="https://legioniz.github.io/" />
-    <link rel="manifest" href="/site.webmanifest?v=20261109-2" />
+    <link rel="manifest" href="/site.webmanifest?v=20261109-3" />
     <script>
       (() => {
         const root = document.documentElement
-        root.dataset.motionOverride = 'system'
+        // Motion is on by default. Only a saved, explicit visitor pause disables it.
+        root.dataset.motionOverride = 'on'
         root.dataset.motion = 'on'
         try {
           const savedTheme = (() => { try { return localStorage.getItem('legion-portfolio-theme') } catch { return null } })()
@@ -30,9 +31,8 @@
           document.documentElement.dataset.orientation = innerWidth >= innerHeight ? 'landscape' : 'portrait'
 
           const savedMotion = (() => { try { return localStorage.getItem('legion-portfolio-motion-v6') } catch { return null } })()
-          const systemPrefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-          const motionOverride = savedMotion === 'on' || savedMotion === 'off' ? savedMotion : 'system'
-          const motionEnabled = savedMotion === 'on' || (savedMotion !== 'off' && !systemPrefersReducedMotion)
+          const motionOverride = savedMotion === 'off' ? 'off' : 'on'
+          const motionEnabled = savedMotion !== 'off'
           root.dataset.motionOverride = motionOverride
           root.dataset.motion = motionEnabled ? 'on' : 'off'
         } catch {
