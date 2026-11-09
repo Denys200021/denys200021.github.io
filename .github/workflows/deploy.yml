@@ -80,7 +80,7 @@ jobs:
           test -s _site/King-Art-Pacumberto-Resume.pdf
 
           # Jekyll must leave the prebuilt Vite output untouched.
-          touch _site/.nojekyll
+          sudo touch _site/.nojekyll
           test -f _site/.nojekyll
 
           # Reject the raw source shell: Pages must serve compiled, hashed assets.
