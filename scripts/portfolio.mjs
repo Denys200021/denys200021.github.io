@@ -116,7 +116,7 @@ async function check() {
   log(features.includes('192.0.2.10') && features.includes('198.51.100.20') && features.includes('203.0.113.15') && !features.includes('fetch('), 'Network Lab uses fictional documentation addresses without network requests')
   log(features.includes('Northstar Tools') && features.includes('fictional') && features.includes('private-data collection'), 'OSINT journal uses a fictional scenario with explicit safety boundaries')
   log(features.includes('URL.createObjectURL(file)') && features.includes('URL.revokeObjectURL(url)') && features.includes('48 * 1024 * 1024') && features.includes('45_000_000'), 'Photo workspace is local-only with image and memory limits')
-  log(features.includes("savedMotion === 'off'") && features.includes("savedMotion === 'on'"), 'Intro sequence respects saved motion settings')
+  log(features.includes("localStorage.getItem('legion-portfolio-motion-v5') !== 'off'"), 'Intro sequence defaults to motion on and respects an explicit saved pause')
   log(features.includes("animationPlayState: fanSpeed === 0 ? 'paused' : 'running'"), 'Hardware fan simulation pauses at zero output')
   const backendClient = await read('src/backend.ts')
   log(backendClient.includes('VITE_SUPABASE_ANON_KEY') && !backendClient.includes('SUPABASE_SERVICE_ROLE_KEY'), 'Frontend backend client uses only public credentials')
