@@ -30,10 +30,10 @@
   --space-6: 24px;
   --space-8: 32px;
   --space-10: 40px;
-  --font-size-xs: 10px;
-  --font-size-sm: 12px;
-  --font-size-base: 14px;
-  --font-size-lg: 18px;
+  --font-size-xs: 11px;
+  --font-size-sm: 13px;
+  --font-size-base: 15px;
+  --font-size-lg: 19px;
   --font-display: 'Space Grotesk', 'Manrope', 'Segoe UI', sans-serif;
   --font-body: 'Manrope', 'Segoe UI', Arial, sans-serif;
   --font-mono: 'DM Mono', 'SFMono-Regular', Consolas, monospace;
@@ -51,7 +51,7 @@
   --text: #42464a;
   --text-strong: #1b2024;
   --muted: #5f6469;
-  --muted-2: #72797d;
+  --muted-2: #62696d;
   --line: rgba(39, 45, 50, .13);
   --line-strong: rgba(39, 45, 50, .25);
   --accent: #a94837;
@@ -64,7 +64,7 @@
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 90px; }
-body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 14px; line-height: 1.7; overflow-x: hidden; transition: background .35s ease, color .35s ease; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 15px; line-height: 1.75; overflow-x: hidden; transition: background .35s ease, color .35s ease; }
 body::before { content: ''; position: fixed; inset: 0; z-index: 20; pointer-events: none; opacity: .035; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E"); mix-blend-mode: soft-light; }
 button, a { font: inherit; }
 button { color: inherit; }
@@ -3548,3 +3548,46 @@ body { font-size: var(--font-size-base); }
 :root[data-quality='economy'][data-motion='on'] .hero-section .hero-title .title-line { animation-duration: 360ms; }
 :root[data-quality='balanced'][data-motion='on'] .hero-section [data-hero-sequence] { animation-duration: 500ms; }
 :root[data-quality='economy'][data-motion='on'] .hero-section [data-hero-sequence] { animation-duration: 360ms; }
+
+/* Portfolio presentation pass — improve reading comfort without enlarging utility labels. */
+body { text-rendering: optimizeLegibility; }
+.hero-description { max-width: 560px; font-size: 15px; line-height: 1.8; }
+.section-heading > p, .feature-header > p { max-width: 66ch; font-size: 14px; line-height: 1.8; }
+.about-main p { font-size: 14px; line-height: 1.85; }
+.about-main .about-lead { font-size: clamp(20px, 2.05vw, 24px); line-height: 1.55; }
+.research-practice-grid article p { font-size: 13px; line-height: 1.8; }
+.project-card-content > p, .recruiter-project-body > p { font-size: 13px; line-height: 1.75; }
+.timeline-content p, .activity-content p { font-size: 13px; line-height: 1.8; }
+.contact-content > p, .recruiter-contact p { font-size: 14px; line-height: 1.8; }
+.recruiter-intro { max-width: 66ch; font-size: clamp(15px, 1.25vw + 10px, 17px); line-height: 1.78; }
+.recruiter-section-heading > p, .recruiter-scope-note { font-size: 13px; line-height: 1.78; }
+.recruiter-skill-card > p, .recruiter-experience-card p, .recruiter-education-item p,
+.recruiter-awards p, .recruiter-leadership-grid p { font-size: 13px; line-height: 1.78; }
+
+/* Responsive type scales with the layout rather than shrinking into micro-copy. */
+@media (max-width: 760px) {
+  body { font-size: 14px; }
+  .page-width { width: calc(100% - 40px); }
+  .hero-description { font-size: 14px; line-height: 1.78; }
+  .section-heading > p, .feature-header > p { font-size: 13px; }
+  .about-main p, .research-practice-grid article p { font-size: 13px; }
+  .about-main .about-lead { font-size: clamp(18px, 5vw, 21px); }
+  .project-card-content > p, .recruiter-project-body > p,
+  .recruiter-skill-card > p, .recruiter-experience-card p,
+  .recruiter-education-item p, .recruiter-awards p,
+  .recruiter-leadership-grid p { font-size: 12.5px; }
+  .contact-content > p, .recruiter-contact p { font-size: 13px; }
+}
+@media (max-width: 420px) {
+  .page-width { width: calc(100% - 32px); }
+  .hero-description { font-size: 13px; }
+  .about-main p { font-size: 12.5px; }
+  .project-card-content > p, .recruiter-project-body > p { font-size: 12px; }
+}
+
+/* Hero text arrives in a restrained sequence; device profiles still control speed. */
+:root[data-motion='on'] .hero-section .hero-title .title-line { animation-duration: 560ms; }
+:root[data-motion='on'] .hero-section .hero-title .title-line:nth-child(2) { animation-delay: 80ms; }
+:root[data-motion='on'] .hero-section .hero-title .title-line:nth-child(3) { animation-delay: 160ms; }
+:root[data-motion='on'][data-quality='balanced'] .hero-section .hero-title .title-line { animation-duration: 520ms; }
+:root[data-motion='on'][data-quality='economy'] .hero-section .hero-title .title-line { animation-duration: 360ms; }

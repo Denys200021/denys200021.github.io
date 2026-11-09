@@ -15,7 +15,7 @@ const expectedFiles = [
   'src/App.tsx', 'src/BackendPanels.tsx', 'src/ErrorBoundary.tsx', 'src/PortfolioFeatures.tsx', 'src/RecruiterView.tsx',
   'src/adaptive.ts', 'src/backend.ts', 'src/config.ts', 'src/data.ts', 'src/main.tsx', 'src/masthead.ts', 'src/reveal.ts',
   'src/serviceWorker.ts', 'src/sound.ts', 'src/styles.css',
-  'public/sw.js', 'public/favicon.svg', 'public/og-card.png', 'public/robots.txt', 'public/sitemap.xml',
+  'public/sw.js', 'public/favicon.svg', 'public/favicon-32.png', 'public/favicon.ico', 'public/og-card.png', 'public/robots.txt', 'public/sitemap.xml',
   'public/site.webmanifest', 'public/BACKEND-SETUP.md', 'public/King-Art-Pacumberto-Resume.pdf', 'public/King-Art-Pacumberto-CV.pdf',
   'public/profile/king-art-portrait-480.webp', 'public/profile/king-art-portrait-800.webp', 'public/profile/king-art-portrait-1023.webp',
   'public/profile/king-art-portrait-480.jpg', 'public/profile/king-art-portrait-800.jpg', 'public/profile/king-art-portrait-1023.jpg',
@@ -28,7 +28,7 @@ const expectedFiles = [
   '.github/workflows/deploy.yml', '.github/dependabot.yml',
   'README.md', 'SOURCES.md', 'BACKEND-SETUP.md', 'CONTENT-CHECKLIST.md', 'PRODUCTION-QUALITY.md', 'RECRUITER-VIEW.md',
   'UI-MOTION-DESIGN.md', 'VISUAL-DESIGN-SYSTEM.md', 'VIEW-TRANSITION-LIFECYCLE.md',
-  'docs/releases/README.md', 'FULL-SYSTEM-AUDIT-2026-11-09.md', '.github/jekyll/_config.yml', 'GITHUB-PAGES-JEKYLL-QA-2026-11-09.md', 'docs/releases/GITHUB-PAGES-JEKYLL-QA-2026-11-09.md',
+  'docs/releases/README.md', 'FULL-SYSTEM-AUDIT-2026-11-09.md', 'GITHUB-PAGES-JEKYLL-QA-2026-11-09.md', 'docs/releases/GITHUB-PAGES-JEKYLL-QA-2026-11-09.md',
 ]
 const excludedSnapshotNames = new Set(['.git', 'node_modules', 'dist', '.portfolio-backups', '.lighthouseci', 'coverage', 'playwright-report', 'test-results', '__pycache__', '.qa-build', '.vite', '_site', '.jekyll-cache', '.bundle'])
 const excludedSnapshotFilePattern = /\.(?:py[co]|tsbuildinfo)$/i
@@ -133,6 +133,7 @@ async function check() {
   log(edge.includes('PORTFOLIO_ALLOWED_ORIGIN') && edge.includes('verifyTurnstile') && edge.includes('consume_portfolio_quota') && edge.includes('payload.website.trim()'), 'Submission Edge Function includes origin, CAPTCHA, quota, and honeypot controls')
   const serviceWorker = await read('public/sw.js')
   log(['/rest/v1/', '/auth/v1/', '/functions/v1/', '/storage/v1/'].every((prefix) => serviceWorker.includes(prefix)), 'Service worker excludes backend API paths from caching')
+  log(serviceWorker.includes("legion-portfolio-shell-v8") && serviceWorker.includes("/favicon.svg?v=20261109-1") && serviceWorker.includes("/favicon-32.png?v=20261109-1") && serviceWorker.includes("/favicon.ico?v=20261109-1"), 'Versioned service-worker cache refreshes and precaches all favicon formats')
 
   const app = await read('src/App.tsx')
   log(app.includes('ErrorBoundary') === false, 'App module is independent from the application-level error boundary')
@@ -156,9 +157,9 @@ async function check() {
   log(reveal.includes('showEverything') && reveal.includes('data-reveal-ready') && reveal.includes('!enabled') && reveal.includes('typeof MutationObserver'), 'Reveal controller preserves readable content when motion is disabled or observer APIs are unavailable')
   log(reveal.includes('INITIAL_CALLBACK_FALLBACK_MS') && reveal.includes('receivedInitialBatch'), 'Reveal controller has a timeout fallback if an observer fails to dispatch')
   log(app.includes('education-history') && app.includes('achievement-summary') && app.includes('skill-disclosure-panel'), 'Skills, academic history, achievements, work history, and extracurriculars use consistent native disclosures')
-  log(app.includes('legion-portfolio-motion-v4') && !app.includes('updateScrollReveals'), 'Versioned motion preference allows a deliberate site override and reveals are independent of header scrolling')
+  log(app.includes('legion-portfolio-motion-v5') && !app.includes('legion-portfolio-motion-v4') && !app.includes('updateScrollReveals'), 'Versioned motion preference defaults on and preserves an explicit visitor pause')
   log(app.includes("headerHidden && !mobileOpen") && app.includes('mobile-nav-active'), 'Mobile navigation keeps the masthead visible while open')
-  log(app.includes('prefersReducedMotion') && app.includes('systemReducedMotion') && app.includes('motionOverride ?? !systemReducedMotion') && !app.includes('disabled={systemReducedMotion}'), 'System reduced motion is the default, but the visitor can explicitly enable the site motion control')
+  log(app.includes('const motionIsPaused') && app.includes('setMotionEnabled(next)') && !app.includes('systemReducedMotion'), 'Decorative motion is on by default and can be paused or resumed from the site control')
   log(app.includes('installInteractionSounds') && app.includes('legion-portfolio-sound-v2') && app.includes('soundEnabledRef'), 'Global interaction sound manager is mounted and uses a versioned visitor preference')
   log(app.includes('role="button"') && app.includes('aria-haspopup="dialog"') && app.includes('onKeyDown={handleKeyDown}'), 'Project cards are clickable, keyboard-operable project launch surfaces')
   log(app.includes('className="project-peek"') && app.includes('CLICK OR PRESS ENTER TO OPEN'), 'Project cards include a quick-view pop-out that previews the project before opening it')
@@ -176,7 +177,7 @@ async function check() {
   const css = await read('src/styles.css')
   log(css.includes('.disclosure-panel') && css.includes('grid-template-rows: minmax(0, 0fr)') && css.includes('grid-template-rows: minmax(0, 1fr)'), 'Expandable content uses zero-minimum grid tracks for reliable reversible height and opacity transitions')
   log(css.includes('.achievement-detail { display: flex;') && !css.includes('.achievement-row div { display: flex;'), 'Achievement detail layout does not override the shared animated disclosure panel')
-  log(css.includes(":root:not([data-motion-override='on'])") && css.includes(":root[data-motion='off']"), 'Reduced motion respects system preference unless the visitor explicitly opts in; manual pause still wins')
+  log(css.includes(":root:not([data-motion-override='on'])") && css.includes(":root[data-motion='off']"), 'The visitor pause still disables decorative motion while the default site setting enables it')
   log(css.includes('@media (orientation: landscape)') || css.includes('@media (orientation:portrait)'), 'Landscape orientation rules are present')
   log(css.includes('@container'), 'Component-level container queries are present')
   log(css.includes('prefers-reduced-motion: reduce'), 'Reduced-motion styles are present')
@@ -219,15 +220,20 @@ async function check() {
 
   const html = await read('index.html')
   log(html.includes('id="root"') && html.includes('boot-fallback') && html.includes('<noscript>'), 'Boot and no-JavaScript fallbacks exist')
-  log(html.includes("localStorage.getItem('legion-portfolio-motion-v4')") && html.includes('dataset.motionOverride'), 'Early boot script applies system default and explicit visitor motion override before paint')
+  log(html.includes("localStorage.getItem('legion-portfolio-motion-v5')") && html.includes("savedMotion === 'off' ? 'off' : 'on'") && html.includes('dataset.motionOverride'), 'Early boot script enables motion by default and applies a saved visitor pause before paint')
   log(html.includes('/King-Art-Pacumberto-Resume.pdf'), 'Original resume is available before React starts and without JavaScript')
+  log(html.includes('/favicon.svg?v=20261109-1') && html.includes('/favicon-32.png?v=20261109-1') && html.includes('/favicon.ico?v=20261109-1'), 'Cache-busted SVG, PNG, and ICO favicon fallbacks are linked from the HTML shell')
+  const faviconPng = await readFile(path.join(ROOT, 'public', 'favicon-32.png'))
+  const faviconIco = await readFile(path.join(ROOT, 'public', 'favicon.ico'))
+  log(faviconPng.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), '32px PNG favicon is a valid PNG image')
+  log(faviconIco.readUInt16LE(0) === 0 && faviconIco.readUInt16LE(2) === 1, 'ICO favicon has a valid Windows icon header')
   log(html.includes('display=swap') && css.includes('Segoe UI') && css.includes('Arial, sans-serif'), 'External typography has swap behavior and system font fallbacks')
   log(html.includes('viewport-fit=cover') && html.includes('orientation'), 'Viewport-fit and early orientation setup are present')
 
   const vite = await read('vite.config.ts')
   log(vite.includes('port: 5174') && vite.includes('port: 4174') && vite.includes('strictPort: true'), 'Development and preview ports remain isolated from 5173')
   const workflow = await read('.github/workflows/deploy.yml')
-  log(workflow.includes('npm run verify') && workflow.includes('actions/configure-pages@v5') && workflow.includes('actions/deploy-pages@v4') && workflow.includes('actions/upload-pages-artifact@v4') && workflow.includes('path: ./dist') && workflow.includes('test -s dist/index.html') && workflow.includes('test -d dist/assets') && workflow.includes('test -f dist/.nojekyll') && !workflow.includes('actions/jekyll-build-pages@v1') && !workflow.includes('destination: ./_site'), 'GitHub Pages workflow validates and uploads compiled Vite dist output directly without Jekyll packaging')
+  log(workflow.includes('npm run verify') && workflow.includes('actions/configure-pages@v5') && workflow.includes('actions/deploy-pages@v4') && workflow.includes('actions/upload-pages-artifact@v4') && workflow.includes('path: ./dist') && workflow.includes('test -s dist/index.html') && workflow.includes('test -s dist/favicon.svg') && workflow.includes('test -s dist/favicon-32.png') && workflow.includes('test -s dist/favicon.ico') && workflow.includes('test -d dist/assets') && workflow.includes('test -f dist/.nojekyll') && !workflow.includes('actions/jekyll-build-pages@v1') && !workflow.includes('destination: ./_site'), 'GitHub Pages workflow validates and uploads compiled Vite dist output directly without Jekyll packaging')
   log(workflow.indexOf('npm run verify') < workflow.indexOf('Validate the production Pages artifact') && workflow.indexOf('Validate the production Pages artifact') < workflow.indexOf('actions/upload-pages-artifact@v4'), 'Vite verification/build and production artifact validation complete before Pages upload')
 
   const publicFiles = await readdir(path.join(ROOT, 'public'))

@@ -81,9 +81,7 @@ export function readAdaptiveProfile(): AdaptiveProfile {
   const visualViewport = window.visualViewport
   const pointerQuery = window.matchMedia?.('(pointer: coarse)')
   const pointer: AdaptivePointer = pointerQuery ? (pointerQuery.matches ? 'coarse' : 'fine') : (nav.maxTouchPoints > 0 ? 'coarse' : 'fine')
-  const systemReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-  const explicitMotionOptIn = document.documentElement.dataset.motionOverride === 'on'
-  const reducedMotion = systemReducedMotion && !explicitMotionOptIn
+  const reducedMotion = document.documentElement.dataset.motion === 'off'
   const width = Math.min(window.innerWidth || 1, visualViewport?.width || window.innerWidth || 1)
   const height = Math.min(window.innerHeight || 1, visualViewport?.height || window.innerHeight || 1)
 
@@ -136,15 +134,13 @@ export function observeAdaptiveProfile(onChange: (profile: AdaptiveProfile) => v
     : null
   rootObserver?.observe(document.documentElement)
 
-  // A site-level motion opt-in is an explicit choice and must update the
-  // rendering profile even while the OS still requests reduced motion.
-  const motionOverrideObserver = typeof MutationObserver !== 'undefined'
+  // A visitor pause or resume updates the optional rendering profile immediately.
+  const motionPreferenceObserver = typeof MutationObserver !== 'undefined'
     ? new MutationObserver(schedule)
     : null
-  motionOverrideObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['data-motion-override'] })
+  motionPreferenceObserver?.observe(document.documentElement, { attributes: true, attributeFilter: ['data-motion'] })
 
   const pointerQuery = window.matchMedia?.('(pointer: coarse)')
-  const motionQuery = window.matchMedia?.('(prefers-reduced-motion: reduce)')
   const addMediaListener = (query: MediaQueryList | undefined) => {
     if (!query) return
     if (typeof query.addEventListener === 'function') query.addEventListener('change', schedule)
@@ -159,7 +155,6 @@ export function observeAdaptiveProfile(onChange: (profile: AdaptiveProfile) => v
   const nav = navigator as NavigatorHints
   nav.connection?.addEventListener?.('change', schedule)
   addMediaListener(pointerQuery)
-  addMediaListener(motionQuery)
   window.addEventListener('resize', schedule, { passive: true })
   window.addEventListener('orientationchange', schedule, { passive: true })
   window.visualViewport?.addEventListener('resize', schedule, { passive: true })
@@ -170,10 +165,9 @@ export function observeAdaptiveProfile(onChange: (profile: AdaptiveProfile) => v
   return () => {
     if (frame) window.cancelAnimationFrame(frame)
     rootObserver?.disconnect()
-    motionOverrideObserver?.disconnect()
+    motionPreferenceObserver?.disconnect()
     nav.connection?.removeEventListener?.('change', schedule)
     removeMediaListener(pointerQuery)
-    removeMediaListener(motionQuery)
     window.removeEventListener('resize', schedule)
     window.removeEventListener('orientationchange', schedule)
     window.visualViewport?.removeEventListener('resize', schedule)

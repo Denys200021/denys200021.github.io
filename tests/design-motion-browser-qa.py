@@ -87,11 +87,15 @@ def main() -> None:
         check(not overflow, 'Design fixture has no horizontal overflow at 320px')
 
         page.emulate_media(reduced_motion='reduce')
+        page.evaluate("document.documentElement.dataset.motionOverride='on'; document.documentElement.dataset.motion='on'")
         reduced_duration = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationDuration')
         reduced_animation = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationName')
-        check(reduced_animation == 'none' and all(float(item.removesuffix('s')) <= 0.001 for item in reduced_duration.split(',')), 'Operating-system reduced motion suppresses hero animation by default')
+        check(reduced_animation != 'none' and any(float(item.removesuffix('s')) > 0.001 for item in reduced_duration.split(',')), 'The site motion-on default remains active when the OS requests reduced motion')
         reduced_visibility = page.locator('.hero-title .title-line').first.evaluate('(e)=>({opacity:getComputedStyle(e).opacity,clip:getComputedStyle(e).clipPath})')
-        check(reduced_visibility['opacity'] == '1' and reduced_visibility['clip'] == 'none', 'Reduced-motion preference never hides the hero headline')
+        check(reduced_visibility['opacity'] == '1' and reduced_visibility['clip'] == 'none', 'The motion preference never hides the hero headline')
+        page.evaluate("document.documentElement.dataset.motionOverride='off'; document.documentElement.dataset.motion='off'")
+        paused_animation = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationName')
+        check(paused_animation == 'none', 'Explicit visitor pause disables the hero text animation')
         check(not errors, 'No browser runtime errors in the design fixture')
         browser.close()
 

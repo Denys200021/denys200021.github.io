@@ -142,7 +142,7 @@ with sync_playwright() as p:
     # The app's production markup is checked at source level; this fixture verifies the intended control contract.
     motion_markup = re.search(r'<button[\s\S]*?className="icon-button motion-toggle"[\s\S]*?</button>', APP)
     motion_markup = motion_markup.group(0) if motion_markup else ''
-    control_contract = {'disabled': bool(re.search(r'\bdisabled(?:\s|=|>)', motion_markup)), 'toggle': 'onClick={toggleMotion}' in motion_markup, 'versioned': 'legion-portfolio-motion-v4' in APP}
+    control_contract = {'disabled': bool(re.search(r'\bdisabled(?:\s|=|>)', motion_markup)), 'toggle': 'onClick={toggleMotion}' in motion_markup, 'versioned': 'legion-portfolio-motion-v5' in APP}
     assert not control_contract['disabled'] and control_contract['toggle'] and control_contract['versioned'], control_contract
 
     print('QA:dynamic project', flush=True)
@@ -183,25 +183,24 @@ with sync_playwright() as p:
     timeout_fallback=visible_state(target)
     assert timeout_fallback['opacity']=='1', timeout_fallback
 
-    print('QA:system reduced motion', flush=True)
-    # The OS preference disables motion by default and leaves content visible.
+    print('QA:motion on by default and visitor pause', flush=True)
+    # The OS may request reduced motion, but the requested site default remains on.
     page.emulate_media(reduced_motion='reduce')
-    page.evaluate("(() => { document.documentElement.dataset.motionOverride='system'; document.documentElement.dataset.motion='off'; window.__revealCleanup(); window.__revealCleanup=window.__installScrollReveal({enabled:false,scope:document.getElementById('main-content')}); return true; })()")
-    reduced=visible_state(target)
-    assert reduced['opacity']=='1' and reduced['transform']=='none', reduced
-
-    # An explicit visitor action can opt this site into motion even if the OS requests reduced motion.
     page.evaluate("(() => { document.documentElement.dataset.motionOverride='on'; document.documentElement.dataset.motion='on'; window.__revealCleanup(); window.__revealCleanup=window.__installScrollReveal({enabled:true,scope:document.getElementById('main-content')}); return true; })()")
     page.wait_for_function("document.documentElement.dataset.revealReady === 'true'")
     page.wait_for_function("document.querySelector('#reveal-target').dataset.revealState !== undefined")
-    manual_override=target.evaluate("e => ({duration:getComputedStyle(e).transitionDuration, opacity:getComputedStyle(e).opacity, ready:document.documentElement.dataset.motionOverride})")
-    assert any(float(value.removesuffix('s')) > 0 for value in manual_override['duration'].split(',')), manual_override
-    assert manual_override['ready']=='on', manual_override
-    page.evaluate("(() => { window.__revealCleanup(); document.documentElement.dataset.motionOverride='system'; document.documentElement.dataset.motion='off'; return true; })()")
+    default_motion=target.evaluate("e => ({duration:getComputedStyle(e).transitionDuration, opacity:getComputedStyle(e).opacity, ready:document.documentElement.dataset.motionOverride})")
+    assert any(float(value.removesuffix('s')) > 0 for value in default_motion['duration'].split(',')), default_motion
+    assert default_motion['ready']=='on', default_motion
 
-    # Restore normal motion after the reduced-motion fallback test above.
+    # A deliberate visitor pause wins over the default even when the OS asks for reduced motion.
+    page.evaluate("(() => { window.__revealCleanup(); document.documentElement.dataset.motionOverride='off'; document.documentElement.dataset.motion='off'; window.__revealCleanup=window.__installScrollReveal({enabled:false,scope:document.getElementById('main-content')}); return true; })()")
+    paused_motion=visible_state(target)
+    assert paused_motion['opacity']=='1' and paused_motion['transform']=='none', paused_motion
+
+    # Restore normal motion after the pause test above.
     page.emulate_media(reduced_motion='no-preference')
-    page.evaluate("(() => { document.documentElement.dataset.motionOverride='system'; document.documentElement.dataset.motion='on'; return true; })()")
+    page.evaluate("(() => { document.documentElement.dataset.motionOverride='on'; document.documentElement.dataset.motion='on'; return true; })()")
 
     print('QA:masthead', flush=True)
     # Exercise the exact production masthead controller and its CSS transition.
@@ -291,11 +290,11 @@ with sync_playwright() as p:
         brand_metrics.append({'width':width,'docWidth':m['scrollWidth'],'monogramHeight':round(m['monoHeight'],1)})
 
     print('QA:preference migration', flush=True)
-    # Preference migration intentionally ignores old keys and supports an explicit opt-in.
-    assert "localStorage.getItem('legion-portfolio-motion-v4')" in INDEX
-    assert "localStorage.getItem('legion-portfolio-motion-v4')" in APP
-    assert "localStorage.setItem('legion-portfolio-motion-v4'" in APP
-    assert "localStorage.getItem('legion-portfolio-motion')" not in APP
+    # Preference migration ignores the previous keys; v5 defaults on and stores only an explicit pause.
+    assert "localStorage.getItem('legion-portfolio-motion-v5')" in INDEX
+    assert "localStorage.getItem('legion-portfolio-motion-v5')" in APP
+    assert "localStorage.setItem('legion-portfolio-motion-v5'" in APP
+    assert "legion-portfolio-motion-v4" not in INDEX + APP
     assert "updateScrollReveals" not in APP
     assert 'installScrollReveal' in APP and 'useLayoutEffect' in APP
     assert "typeof IntersectionObserver === 'undefined'" in REVEAL_SOURCE.read_text()
@@ -313,7 +312,7 @@ with sync_playwright() as p:
     inline_scripts=re.findall(r'<script>(.*?)</script>', INDEX, flags=re.S)
     assert inline_scripts, 'index.html must have an early preference bootstrap script'
     pref_page.evaluate('''() => {
-      const store = {'legion-portfolio-motion': 'off', 'legion-portfolio-motion-v2': 'off', 'legion-portfolio-motion-v3': 'off'};
+      const store = {'legion-portfolio-motion': 'off', 'legion-portfolio-motion-v2': 'off', 'legion-portfolio-motion-v3': 'off', 'legion-portfolio-motion-v4': 'off'};
       Object.defineProperty(window, 'localStorage', { configurable: true, value: {
         getItem: (key) => Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null,
         setItem: (key, value) => { store[key] = String(value); },
@@ -324,17 +323,16 @@ with sync_playwright() as p:
     pref_page.add_script_tag(content=inline_scripts[0])
     default_motion=pref_page.locator('html').get_attribute('data-motion')
     default_override=pref_page.locator('html').get_attribute('data-motion-override')
-    assert default_motion == 'on' and default_override == 'system', {'stale-v1-v3-settings-ignored': True, 'data-motion': default_motion, 'override': default_override}
+    assert default_motion == 'on' and default_override == 'on', {'stale-v1-v4-settings-ignored': True, 'data-motion': default_motion, 'override': default_override}
     pref_page.emulate_media(reduced_motion='reduce')
-    pref_page.evaluate('window.__mockMotionStore && delete window.__mockMotionStore["legion-portfolio-motion-v4"]')
     pref_page.add_script_tag(content=inline_scripts[0])
-    os_default=pref_page.locator('html').get_attribute('data-motion')
-    assert os_default == 'off' and pref_page.locator('html').get_attribute('data-motion-override') == 'system', {'system-reduced-motion-default': os_default}
-    pref_page.evaluate("window.__mockMotionStore['legion-portfolio-motion-v4'] = 'on'")
+    os_override=pref_page.locator('html').get_attribute('data-motion')
+    assert os_override == 'on' and pref_page.locator('html').get_attribute('data-motion-override') == 'on', {'os-preference-does-not-disable-site-default': os_override}
+    pref_page.evaluate("window.__mockMotionStore['legion-portfolio-motion-v5'] = 'on'")
     pref_page.add_script_tag(content=inline_scripts[0])
     explicit_on=pref_page.locator('html').get_attribute('data-motion')
-    assert explicit_on == 'on' and pref_page.locator('html').get_attribute('data-motion-override') == 'on', {'explicit-site-opt-in': explicit_on}
-    pref_page.evaluate("window.__mockMotionStore['legion-portfolio-motion-v4'] = 'off'")
+    assert explicit_on == 'on' and pref_page.locator('html').get_attribute('data-motion-override') == 'on', {'explicit-site-motion-on': explicit_on}
+    pref_page.evaluate("window.__mockMotionStore['legion-portfolio-motion-v5'] = 'off'")
     pref_page.add_script_tag(content=inline_scripts[0])
     explicit_off=pref_page.locator('html').get_attribute('data-motion')
     assert explicit_off == 'off' and pref_page.locator('html').get_attribute('data-motion-override') == 'off', {'explicit-site-pause': explicit_off}
@@ -346,7 +344,7 @@ print(json.dumps({
   'disclosures':disclosure_results,
   'KA_responsive':brand_metrics,
   'masthead':{'downScroll':header_hidden,'upScroll':header_revealed,'topGuard':top_header,'mobileMenuGuard':menu_header,'motionOffGuard':static_header,'mobileDownScroll':mobile_header_hidden},
-  'preferenceMigration':'old v1-v3 keys ignored; default follows OS; v4 site opt-in can explicitly enable motion',
+  'preferenceMigration':'old v1-v4 keys ignored; motion defaults on; v5 stores an explicit visitor pause',
   'integration':'App uses real IntersectionObserver reveals and the separately browser-tested production masthead controller',
   'browserErrors':errors,
   'result':'PASS'

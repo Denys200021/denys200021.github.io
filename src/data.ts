@@ -77,7 +77,7 @@ export const projects: Project[] = [
     headline: 'Connect sensor readings to physical behavior.',
     summary: 'An Arduino fan controller with LM35 temperature sensing, PWM speed regulation, majority-vote temperature sampling, startup kick control, debounced mode switching, and serial monitoring.',
     overview: 'This embedded project explores the path from sensor input to physical output. Temperature readings are used in the fan-control workflow, while manual mode and serial monitoring help make system behavior observable.',
-    role: 'Embedded systems project — programmed an automatic-sensor portable fan using C++ on Arduino.',
+    role: 'Embedded systems project — programmed a portable fan with automatic temperature sensing using C++ on Arduino.',
     stack: ['C++', 'Arduino', 'LM35 temperature sensor', 'PWM', 'Serial monitoring'],
     highlights: ['LM35 temperature sensing', 'PWM fan-speed regulation', 'Majority-vote sampling', 'Startup kick control', 'Debounced mode switching'],
     details: [
@@ -118,9 +118,9 @@ export const projects: Project[] = [
     category: 'Creative',
     label: 'Cosplay & portrait photography',
     headline: 'Capture moments. Preserve memories.',
-    summary: 'A small Quezon City-based photography initiative focused on cosplay, portraits, duo and group sessions, and event coverage.',
-    overview: 'Toki Satsuei is a creative practice built around visual storytelling, simple art direction, and thoughtful photo delivery. It also gives the portfolio a view of work beyond software: planning, communication, brand identity, and image-making.',
-    role: 'Co-leads the small creative team; handles photography planning and editing.',
+    summary: 'A Quezon City-based photography initiative focused on cosplay, portraits, duo and group sessions, and event coverage.',
+    overview: 'Toki Satsuei is a creative practice built around visual storytelling, thoughtful photo delivery, and clear art direction. It extends the portfolio beyond software through planning, communication, brand development, and image-making.',
+    role: 'Co-leads a small creative team, with a focus on photography planning and editing.',
     stack: ['Canon EOS 3000D', 'Photography', 'Photo editing', 'Visual direction', 'Brand development'],
     highlights: ['Cosplay and character portraits', 'Individual, duo, and group sessions', 'Outdoor and event photography', 'Consistent visual identity', 'Client communication and delivery planning'],
     details: [
@@ -270,7 +270,7 @@ export const extracurriculars = [
   {
     title: 'Technology Club & Technical Team',
     organization: 'School activities',
-    description: 'Technology Club Officer and Technical Team Leader. Led visual and video playback, speaker and audio setup for performances and school events, and hardware/software troubleshooting including cable replacement and speaker issues. Served as the primary technical operator for esports livestreams of Mobile Legends: Bang Bang and Call of Duty: Mobile.',
+    description: 'Technology Club Officer and Technical Team Leader. Managed visual and video playback, speaker and audio setup for performances and school events, and hardware and software troubleshooting, including cable replacement and speaker repairs. Served as the primary technical operator for esports livestreams of Mobile Legends: Bang Bang and Call of Duty: Mobile.',
   },
   {
     title: 'Mathematics Club & Science Club',

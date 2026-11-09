@@ -22,11 +22,9 @@ export function IntroSequence() {
     if (typeof window === 'undefined') return false
     try {
       if (sessionStorage.getItem('legion-intro-seen-v1') === 'yes') return false
-      const savedMotion = localStorage.getItem('legion-portfolio-motion-v4')
-      if (savedMotion === 'off') return false
-      if (savedMotion === 'on') return true
-    } catch { /* Storage may be unavailable; the OS setting remains the safe default. */ }
-    return !(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
+      return localStorage.getItem('legion-portfolio-motion-v5') !== 'off'
+    } catch { /* Storage may be unavailable; motion remains enabled by default. */ }
+    return true
   })
 
   useEffect(() => {
@@ -59,9 +57,9 @@ export function IntroSequence() {
 }
 
 export function ProjectCompare() {
-  const compareable = projects.filter((project) => project.featured)
-  const [leftId, setLeftId] = useState(compareable[0]?.id ?? projects[0]?.id ?? '')
-  const [rightId, setRightId] = useState(compareable[1]?.id ?? projects[1]?.id ?? '')
+  const comparable = projects.filter((project) => project.featured)
+  const [leftId, setLeftId] = useState(comparable[0]?.id ?? projects[0]?.id ?? '')
+  const [rightId, setRightId] = useState(comparable[1]?.id ?? projects[1]?.id ?? '')
   const left = projects.find((project) => project.id === leftId) ?? projects[0]
   const right = projects.find((project) => project.id === rightId) ?? projects[1]
   if (!left || !right) return null
@@ -332,7 +330,7 @@ export function PortfolioFeatures({ onOpenProject }: { onOpenProject: (project: 
       <section id="photo-archive" className="feature-section section-pad page-width">
         <FeatureHeader index="05" label="PHOTOGRAPHY ARCHIVE / IMAGE PRACTICE" title="A frame is a" accent="decision." copy="A private, local image workspace for reviewing your own photographs. Add images from your device to test a simple before/after treatment and a full-screen viewer; files never leave this browser session." />
         <div className="photo-archive-shell" data-reveal>
-          <div className="photo-archive-head"><div><span className="feature-code">LOCAL SESSION / 0 UPLOADED TO SERVER</span><h3>Selected frames <em>workspace</em></h3></div><button className="feature-button" onClick={() => fileInput.current?.click()}>＋ ADD PHOTOS</button><input ref={fileInput} className="visually-hidden" type="file" aria-label="Add photos" accept="image/*" multiple onChange={handlePhotoFiles}/></div>
+          <div className="photo-archive-head"><div><span className="feature-code">LOCAL SESSION / NO SERVER UPLOADS</span><h3>Your <em>photo workspace</em></h3></div><button className="feature-button" onClick={() => fileInput.current?.click()}>＋ ADD PHOTOS</button><input ref={fileInput} className="visually-hidden" type="file" aria-label="Add photos" accept="image/*" multiple onChange={handlePhotoFiles}/></div>
           <div className="photo-archive-filters" role="group" aria-label="Filter photos by aspect ratio">{(['all', 'portrait', 'landscape', 'square'] as const).map((item) => <button key={item} className={photoFilter === item ? 'active' : ''} onClick={() => setPhotoFilter(item)} aria-pressed={photoFilter === item}>{item.toUpperCase()}</button>)}<span>{filteredPhotos.length} / {photos.length} FRAMES</span></div>
           {photos.length === 0 ? <div className="photo-empty"><div className="photo-empty-icon">⌗</div><strong>Your archive starts with a frame.</strong><p>No sample photography is included yet. Add JPG, PNG, or WebP images from your device to create a temporary gallery preview.</p><button className="feature-text-button" onClick={() => fileInput.current?.click()}>Choose images from this device ↗</button></div> : filteredPhotos.length ? <div className="photo-grid">{filteredPhotos.map((photo) => <button className="photo-tile" key={photo.id} onClick={() => { setViewerId(photo.id); setSplit(52) }}><img src={photo.url} alt={photo.name} loading="lazy"/><span><b>{photo.name}</b><small>{photo.width} × {photo.height} · {(photo.bytes / 1024).toFixed(0)} KB</small></span><i>OPEN ↗</i></button>)}</div> : <div className="photo-empty compact">No images in this aspect-ratio category. Choose another filter.</div>}
           {uploadMessage && <p className="photo-local-note" role="status">{uploadMessage}</p>}

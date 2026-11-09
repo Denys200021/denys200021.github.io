@@ -107,12 +107,33 @@ for name in unknown_workflow_scripts:
     print(f"  UNKNOWN npm run {name}")
 check("npm run verify" in workflow and "lhci autorun" in workflow and "npm run test:interactions" not in workflow,
       "Deployment workflow delegates the complete test matrix to one release command and runs Lighthouse afterward")
-check("path: ./dist" in workflow and "test -s dist/index.html" in workflow and "test -d dist/assets" in workflow and "test -f dist/.nojekyll" in workflow,
-      "The Pages artifact is validated directly from the compiled Vite dist folder")
+check("path: ./dist" in workflow and "test -s dist/index.html" in workflow and "test -s dist/favicon.svg" in workflow and "test -s dist/favicon-32.png" in workflow and "test -s dist/favicon.ico" in workflow and "test -d dist/assets" in workflow and "test -f dist/.nojekyll" in workflow,
+      "The Pages artifact is validated directly from the compiled Vite dist folder, including every favicon format")
 check("uses: actions/jekyll-build-pages@v1" not in workflow and "destination: ./_site" not in workflow and "path: ./_site" not in workflow,
       "The deployment bypasses Jekyll packaging and publishes the Vite build without rewriting its files")
 check(workflow.index("npm run verify") < workflow.index("Validate the production Pages artifact") < workflow.index("actions/upload-pages-artifact@v4"),
       "Build/verification, direct dist validation, and Pages artifact upload occur in the required order")
+html_shell = read("index.html")
+favicon_svg = read("public/favicon.svg")
+favicon_png = (ROOT / "public/favicon-32.png").read_bytes()
+favicon_ico = (ROOT / "public/favicon.ico").read_bytes()
+manifest = read("public/site.webmanifest")
+service_worker = read("public/sw.js")
+check(all(f'/favicon{suffix}?v=20261109-1' in html_shell for suffix in ('.svg', '-32.png', '.ico')) and '<link rel="mask-icon"' in html_shell,
+      "HTML provides versioned SVG, PNG, ICO, and mask-icon favicon references")
+check(favicon_svg.lstrip().startswith("<svg") and favicon_png.startswith(bytes([137, 80, 78, 71, 13, 10, 26, 10])) and favicon_ico[:4] == bytes([0, 0, 1, 0]),
+      "All deployed favicon source formats have valid file signatures")
+check('favicon.svg?v=20261109-1' in manifest and 'favicon-32.png?v=20261109-1' in manifest,
+      "Web app manifest includes versioned vector and raster icons")
+check("legion-portfolio-shell-v8" in service_worker and "favicon.ico?v=20261109-1" in service_worker,
+      "Service-worker cache version and precache list refresh the favicon set")
+check("legion-portfolio-motion-v5" in html_shell and "savedMotion === 'off' ? 'off' : 'on'" in html_shell,
+      "Early boot enables motion unless a visitor has explicitly paused it")
+check("legion-portfolio-motion-v5" in read("src/App.tsx") and "savedMotion !== 'off'" in read("src/PortfolioFeatures.tsx"),
+      "React motion controls and the intro sequence share the motion-on preference")
+adaptive_source = read("src/adaptive.ts")
+check("document.documentElement.dataset.motion === 'off'" in adaptive_source and "prefers-reduced-motion" not in adaptive_source,
+      "Adaptive motion load follows the site's explicit pause state rather than overriding the default from the OS")
 check("cache: npm" in workflow and "npm ci --no-audit --no-fund" in workflow and (ROOT / "package-lock.json").is_file(), "Node setup uses npm caching with the committed lockfile and reproducible npm ci installation")
 check("needs: verify-and-package" in workflow and "id-token: write" in workflow and "pages: write" in workflow,
       "Pages deployment waits for verification and has the documented Pages/id-token permissions")

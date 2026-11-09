@@ -12,6 +12,9 @@
     <link rel="manifest" href="/site.webmanifest" />
     <script>
       (() => {
+        const root = document.documentElement
+        root.dataset.motionOverride = 'on'
+        root.dataset.motion = 'on'
         try {
           const savedTheme = localStorage.getItem('legion-portfolio-theme')
           const theme = savedTheme === 'light' ? 'light' : 'dark'
@@ -26,12 +29,10 @@
           document.documentElement.dataset.quality = reducedGraphics ? 'economy' : (coarsePointer ? 'balanced' : 'full')
           document.documentElement.dataset.orientation = innerWidth >= innerHeight ? 'landscape' : 'portrait'
 
-          const savedMotion = localStorage.getItem('legion-portfolio-motion-v4')
-          const motionOverride = savedMotion === null ? 'system' : (savedMotion === 'on' ? 'on' : 'off')
-          const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-          const motionEnabled = motionOverride === 'on' || (motionOverride === 'system' && !reducedMotion)
-          document.documentElement.dataset.motionOverride = motionOverride
-          document.documentElement.dataset.motion = motionEnabled ? 'on' : 'off'
+          const savedMotion = localStorage.getItem('legion-portfolio-motion-v5')
+          const motionOverride = savedMotion === 'off' ? 'off' : 'on'
+          root.dataset.motionOverride = motionOverride
+          root.dataset.motion = motionOverride
         } catch {
           // Theme and motion preferences remain usable when storage is unavailable.
         }
@@ -39,7 +40,7 @@
     </script>
     <meta name="description" content="King Art D. Pacumberto — PUP Quezon City BSIT student building software and embedded projects, with experience in IT support, technical operations, student leadership, and event production." />
     <meta property="og:title" content="King Art D. Pacumberto — Field Notes & Portfolio" />
-    <meta property="og:description" content="King Art D. Pacumberto - BSIT student, software projects, embedded systems, technical support, audiovisual production, and event photography." />
+    <meta property="og:description" content="King Art D. Pacumberto — BSIT student, software projects, embedded systems, technical support, audiovisual production, and event photography." />
     <meta property="og:type" content="profile" />
     <meta property="og:site_name" content="Legioniz Portfolio" />
     <meta property="og:url" content="https://legioniz.github.io/" />
@@ -52,7 +53,10 @@
     <meta name="twitter:title" content="King Art D. Pacumberto — Field Notes & Portfolio" />
     <meta name="twitter:description" content="BSIT student building software, data, and embedded projects." />
     <meta name="twitter:image" content="https://legioniz.github.io/og-card.png" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20261109-1" sizes="any" />
+    <link rel="icon" type="image/png" href="/favicon-32.png?v=20261109-1" sizes="32x32" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=20261109-1" />
+    <link rel="mask-icon" href="/favicon.svg?v=20261109-1" color="#e87961" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

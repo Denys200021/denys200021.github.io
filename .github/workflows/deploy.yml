@@ -66,6 +66,11 @@ jobs:
         run: |
           set -euo pipefail
           test -s dist/index.html
+          test -s dist/favicon.svg
+          test -s dist/favicon-32.png
+          test -s dist/favicon.ico
+          grep -q '/favicon.svg?v=20261109-1' dist/index.html
+          test -s dist/site.webmanifest
           test -d dist/assets
           test -s dist/King-Art-Pacumberto-CV.pdf
           test -s dist/King-Art-Pacumberto-Resume.pdf

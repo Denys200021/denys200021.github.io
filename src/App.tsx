@@ -31,8 +31,6 @@ function runProjectViewTransition(update: () => void, source: HTMLElement | null
   const doc = document as ViewTransitionDocument
   const canAnimate = Boolean(doc.startViewTransition)
     && document.documentElement.dataset.motion !== 'off'
-    && (!(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
-      || document.documentElement.dataset.motionOverride === 'on')
 
   if (!canAnimate || !doc.startViewTransition) {
     update()
@@ -63,12 +61,7 @@ function runProjectViewTransition(update: () => void, source: HTMLElement | null
   }
 }
 
-const prefersReducedMotion = () => {
-  if (typeof window === 'undefined') return false
-  const systemPrefersReduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-  // A deliberate site-level opt-in can override the OS preference for this site only.
-  return systemPrefersReduced && document.documentElement.dataset.motionOverride !== 'on'
-}
+const motionIsPaused = () => document.documentElement.dataset.motion === 'off'
 type IconName = 'arrow' | 'external' | 'github' | 'sun' | 'moon' | 'menu' | 'close' | 'command' | 'mail' | 'pin' | 'spark' | 'chevron' | 'download' | 'copy' | 'check' | 'code' | 'layers' | 'terminal' | 'camera' | 'cpu' | 'database' | 'award' | 'arrowUp' | 'volume' | 'volumeOff' | 'play' | 'pause'
 
 function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
@@ -612,15 +605,11 @@ export default function App() {
     try { return localStorage.getItem('legion-portfolio-sound-v2') !== 'off' } catch { return true }
   })
   const soundEnabledRef = useRef(soundEnabled)
-  const [systemReducedMotion, setSystemReducedMotion] = useState(prefersReducedMotion)
-  const [motionOverride, setMotionOverride] = useState<boolean | null>(() => {
+  const [motionEnabled, setMotionEnabled] = useState(() => {
     try {
-      const saved = localStorage.getItem('legion-portfolio-motion-v4')
-      return saved === null ? null : saved === 'on'
-    } catch { return null }
+      return localStorage.getItem('legion-portfolio-motion-v5') !== 'off'
+    } catch { return true }
   })
-  // Follow the OS by default; an intentional visitor action can override it for this site.
-  const motionEnabled = motionOverride ?? !systemReducedMotion
   const [copied, setCopied] = useState(false)
 
   const categories: ('All' | ProjectCategory)[] = ['All', 'Software', 'Data & Systems', 'Embedded', 'Creative']
@@ -685,16 +674,16 @@ export default function App() {
   }
   const toggleMotion = () => {
     const next = !motionEnabled
-    setMotionOverride(next)
-    try { localStorage.setItem('legion-portfolio-motion-v4', next ? 'on' : 'off') } catch { /* Storage can be disabled. */ }
+    setMotionEnabled(next)
+    try { localStorage.setItem('legion-portfolio-motion-v5', next ? 'on' : 'off') } catch { /* Storage can be disabled. */ }
   }
   const navigate = (id: string) => {
     setMobileOpen(false)
     setPaletteOpen(false)
     if (id === 'admin-console') { setAdminOpen(true); return }
     if (id === 'recruiter-view') { openRecruiterView(); return }
-    const reducedMotion = prefersReducedMotion()
-    document.getElementById(id)?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' })
+    const motionPaused = motionIsPaused()
+    document.getElementById(id)?.scrollIntoView({ behavior: motionPaused ? 'auto' : 'smooth', block: 'start' })
   }
 
   useEffect(() => {
@@ -707,26 +696,14 @@ export default function App() {
   useEffect(() => {
     const root = document.documentElement
     root.dataset.motion = motionEnabled ? 'on' : 'off'
-    root.dataset.motionOverride = motionOverride === null ? 'system' : motionOverride ? 'on' : 'off'
-  }, [motionEnabled, motionOverride])
+    root.dataset.motionOverride = motionEnabled ? 'on' : 'off'
+  }, [motionEnabled])
 
   useEffect(() => {
     soundEnabledRef.current = soundEnabled
   }, [soundEnabled])
 
   useEffect(() => installInteractionSounds(() => soundEnabledRef.current), [])
-
-  useEffect(() => {
-    const query = window.matchMedia?.('(prefers-reduced-motion: reduce)')
-    if (!query) return
-    const update = (event: MediaQueryListEvent) => setSystemReducedMotion(event.matches)
-    if (typeof query.addEventListener === 'function') query.addEventListener('change', update)
-    else query.addListener?.(update)
-    return () => {
-      if (typeof query.removeEventListener === 'function') query.removeEventListener('change', update)
-      else query.removeListener?.(update)
-    }
-  }, [])
 
   useEffect(() => observeAdaptiveProfile((profile) => {
     const root = document.documentElement
@@ -910,14 +887,8 @@ export default function App() {
             data-sfx="toggle"
             onClick={toggleMotion}
             aria-pressed={motionEnabled}
-            title={motionEnabled
-              ? (systemReducedMotion ? 'Pause motion; your site-level choice currently overrides the system reduced-motion preference' : 'Pause decorative motion')
-              : (systemReducedMotion ? 'Enable motion for this site (overrides the system reduced-motion preference)' : 'Resume decorative motion')}
-            aria-label={motionEnabled
-              ? 'Pause decorative motion'
-              : systemReducedMotion
-                ? 'Enable decorative motion for this site, overriding the system reduced-motion preference'
-                : 'Resume decorative motion'}>
+            title={motionEnabled ? 'Pause decorative motion' : 'Resume decorative motion'}
+            aria-label={motionEnabled ? 'Pause decorative motion' : 'Resume decorative motion'}>
             <Icon name={motionEnabled ? 'pause' : 'play'} size={16}/>
           </button>
           <button className="icon-button theme-toggle" data-sfx="toggle" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}><Icon name={theme === 'dark' ? 'sun' : 'moon'} size={17}/></button>
@@ -963,10 +934,10 @@ export default function App() {
           <SectionHeading index="01" kicker="FIELD NOTE / PROFILE" title="A practical kind" accent="of curiosity." description="An IT student focused on practical software, dependable systems, and clear communication."/>
           <div className="about-layout">
             <div className="about-main" data-reveal="left">
-              <p className="about-lead">I’m pursuing a <strong>Bachelor of Science in Information Technology</strong> at the Polytechnic University of the Philippines - Quezon City. I completed the STEM strand at CASAP Quezon City with a recorded grade of 96.</p>
-              <p>My work spans software development, data-oriented applications, embedded systems, and hands-on IT support. I enjoy understanding a problem from several angles - the interface, underlying logic, data, hardware, and the people using the system.</p>
+              <p className="about-lead">I’m pursuing a <strong>Bachelor of Science in Information Technology</strong> at the Polytechnic University of the Philippines, Quezon City Campus. I completed the STEM strand at CASAP Quezon City with a grade of 96.</p>
+              <p>My work spans software development, data-oriented applications, embedded systems, and hands-on IT support. I enjoy understanding a problem from several angles — the interface, underlying logic, data, hardware, and the people who use the system.</p>
               <p>Outside software, I have led student technical teams, supported school audiovisual production and esports livestreams, played bass guitar with a campus band, and documented school events through photography and editing.</p>
-              <p>I also practice open-source intelligence (OSINT): gathering publicly available personal and corporate information, then cross-checking it against official sources for preliminary legitimacy and compliance checks and task-specific research—not legal determinations.</p>
+              <p>I also practice open-source intelligence (OSINT), gathering publicly available information and cross-checking it against official sources. I use this work for preliminary legitimacy checks and task-specific research, not to make legal or formal compliance determinations.</p>
               <div className="about-signature"><span className="signature-mark">KA.</span><span>LEARNING BY BUILDING<br/><small>QUEZON CITY, PHILIPPINES</small></span></div>
             </div>
             <div className="about-aside" data-reveal="right">
@@ -993,7 +964,7 @@ export default function App() {
             <div className="research-practice-heading"><span>FIELD NOTE / OSINT & SECURITY</span><small>FOUNDATIONAL · SELF-DIRECTED PRACTICE</small></div>
             <h3>Research with verification. Security with boundaries.</h3>
             <div className="research-practice-grid">
-              <article><span>01 / OPEN-SOURCE RESEARCH</span><p>Gather and cross-check publicly available personal and corporate information against official sources to support legitimacy checks, official-information verification, and task-specific investigations.</p><div className="research-tags"><b>PUBLIC SOURCES</b><b>OFFICIAL VERIFICATION</b><b>CROSS-CHECKING</b></div></article>
+              <article><span>01 / OPEN-SOURCE RESEARCH</span><p>Gather and cross-check publicly available information against official sources to support preliminary legitimacy checks, source verification, and task-specific research.</p><div className="research-tags"><b>PUBLIC SOURCES</b><b>OFFICIAL VERIFICATION</b><b>CROSS-CHECKING</b></div></article>
               <article><span>02 / DEFENSIVE NETWORK PRACTICE</span><p>Foundational Linux and Kali Linux practice, Nmap-based local host and port discovery, local firewall rules, port/traffic analysis, and rule-based blocking. Familiarity with Medusa for authentication-audit exercises, plus data/traffic-spoofing and IP-manipulation concepts explored with isolated dummy machines.</p><div className="research-tags"><b>LINUX / KALI</b><b>NMAP</b><b>AUTHORIZED LABS</b></div></article>
             </div>
             <p className="research-scope-note">Practice is self-directed and limited to systems owned by you or explicitly authorized for testing. This describes foundational experience, not a professional penetration-testing or investigative certification.</p>

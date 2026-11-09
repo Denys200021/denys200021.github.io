@@ -139,7 +139,7 @@ export function RecruiterView({ onExit, onOpenProject }: RecruiterViewProps) {
         </section>
 
         <section id="recruiter-skills" className="recruiter-section" aria-labelledby="recruiter-skills-title">
-          <div className="recruiter-section-heading"><div><p className="recruiter-eyebrow">TOOLS & PRACTICE / 02</p><h2 id="recruiter-skills-title">Skills with context.</h2></div><p>No self-assigned proficiency percentages. Skills are grouped by practice area and connected to documented work where evidence exists.</p></div>
+          <div className="recruiter-section-heading"><div><p className="recruiter-eyebrow">TOOLS & PRACTICE / 02</p><h2 id="recruiter-skills-title">Skills with context.</h2></div><p>Skills are grouped by practice area and linked to documented work where evidence exists, rather than assigned arbitrary proficiency scores.</p></div>
           <div className="recruiter-skill-grid">
             {skillGroups.map((group, index) => (
               <article className="recruiter-skill-card" key={group.name}>
@@ -154,7 +154,7 @@ export function RecruiterView({ onExit, onOpenProject }: RecruiterViewProps) {
         </section>
 
         <section id="recruiter-experience" className="recruiter-section" aria-labelledby="recruiter-experience-title">
-          <div className="recruiter-section-heading"><div><p className="recruiter-eyebrow">PRACTICAL EXPERIENCE / 03</p><h2 id="recruiter-experience-title">Technical work and transferable experience.</h2></div><p>Relevant responsibilities are surfaced first. Additional employment history remains available below.</p></div>
+          <div className="recruiter-section-heading"><div><p className="recruiter-eyebrow">PRACTICAL EXPERIENCE / 03</p><h2 id="recruiter-experience-title">Technical work and transferable experience.</h2></div><p>The most relevant responsibilities appear first; additional work history is listed below.</p></div>
           <div className="recruiter-experience-list recruiter-timeline" data-motion-zone>
             {relevantExperience.map((item) => (
               <article className="recruiter-experience-card" key={`${item.title}-${item.period}`}><span className="recruiter-timeline-marker" aria-hidden="true"/>
@@ -182,7 +182,7 @@ export function RecruiterView({ onExit, onOpenProject }: RecruiterViewProps) {
             <div className="recruiter-awards">
               {achievements.map((item) => <article key={item.title}><span>{item.mark}</span><div><h3>{item.title}</h3><p>{item.note}</p>{item.href && <a href={item.href} target="_blank" rel="noopener noreferrer">Published result ↗</a>}</div></article>)}
             </div>
-            <p className="recruiter-scope-note">Published records are linked where available. Other achievements are based on information supplied for this portfolio; event details are not inferred when they were not provided.</p>
+            <p className="recruiter-scope-note">Published records are linked when available. Other achievements are included from the information supplied for this portfolio; missing event details have not been assumed.</p>
           </div>
         </section>
 
