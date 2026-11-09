@@ -91,8 +91,10 @@ def main() -> None:
         reduced_duration = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationDuration')
         reduced_animation = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationName')
         check(reduced_animation != 'none' and any(float(item.removesuffix('s')) > 0.001 for item in reduced_duration.split(',')), 'The site motion-on default remains active when the OS requests reduced motion')
+        # Let the short entrance animation finish before measuring the final visible state.
+        page.wait_for_timeout(800)
         reduced_visibility = page.locator('.hero-title .title-line').first.evaluate('(e)=>({opacity:getComputedStyle(e).opacity,clip:getComputedStyle(e).clipPath})')
-        check(reduced_visibility['opacity'] == '1' and reduced_visibility['clip'] == 'none', 'The motion preference never hides the hero headline')
+        check(reduced_visibility['opacity'] == '1' and reduced_visibility['clip'] == 'none', 'The motion preference never leaves the hero headline hidden after its entrance animation')
         page.evaluate("document.documentElement.dataset.motionOverride='off'; document.documentElement.dataset.motion='off'")
         paused_animation = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationName')
         check(paused_animation == 'none', 'Explicit visitor pause disables the hero text animation')
