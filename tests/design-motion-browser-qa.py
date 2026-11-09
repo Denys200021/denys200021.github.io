@@ -13,14 +13,15 @@ from playwright.sync_api import sync_playwright
 ROOT = Path(__file__).resolve().parents[1]
 CSS = (ROOT / 'src/styles.css').read_text(encoding='utf-8')
 HTML = r'''<!doctype html><html lang="en" data-theme="dark" data-motion="on" data-motion-override="on" data-quality="full" data-pointer="fine"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
-<main class="page-width">
+<div class="site-shell"><main class="page-width">
   <section class="hero-section"><div class="hero-content"><p class="hero-pretitle" data-hero-sequence="eyebrow">FIELD NOTES / 001</p><h1 class="hero-title" aria-label="From a question to working systems."><span class="title-line" data-hero-line aria-hidden="true">From a question</span><span class="title-line" data-hero-line aria-hidden="true">to working</span><span class="title-line" data-hero-line aria-hidden="true">systems.</span></h1><p data-hero-sequence="description">Hero description</p><div data-hero-sequence="actions"><button>Explore</button></div></div><div class="hero-visual motion-active" data-motion-zone><div class="visual-plate"></div></div></section>
   <div class="timeline motion-active"><article class="timeline-item"><span class="timeline-marker"></span></article></div>
   <section class="recruiter-view" data-recruiter-motion-ready="true"><div class="recruiter-timeline motion-active"><article class="recruiter-experience-card is-in-view"><span class="recruiter-timeline-marker"></span><div><span>2026</span><h3>Experience</h3></div><div><p>Technical support and project work.</p></div></article></div><article class="recruiter-education-item is-in-view"><span>2026</span><div><h3>Education</h3></div></article><div class="recruiter-project-card"><div class="recruiter-project-art"><i></i></div></div></section>
   <div class="network-path motion-active"><div class="network-link is-traversed"><i></i></div><button class="network-node active">Selected</button><div class="network-node-detail" aria-live="polite">Selected node details</div></div>
   <div class="photo-lightbox"><div class="photo-lightbox-panel"><button class="photo-viewer-nav">Next</button></div></div>
   <button id="focus-test">Focus test</button>
-</main></body></html>'''
+  <div class="project-meta">PROJECT / 01</div><div class="feature-code">LENS LAB / EXPOSURE</div><footer class="footer-copy"><small>© 2026 PORTFOLIO</small></footer>
+</main></div></body></html>'''
 
 
 def main() -> None:
@@ -44,6 +45,10 @@ def main() -> None:
         body_type = page.locator('body').evaluate('(e)=>Number.parseFloat(getComputedStyle(e).fontSize)')
         recruiter_copy_type = page.locator('.recruiter-experience-card p').evaluate('(e)=>Number.parseFloat(getComputedStyle(e).fontSize)')
         check(body_type >= 15.5 and recruiter_copy_type >= 14, 'Body and recruiter copy use the updated readable editorial type scale')
+        metadata_sizes = page.locator('.project-meta, .feature-code, .footer-copy small').evaluate_all('(items)=>items.map(e=>Number.parseFloat(getComputedStyle(e).fontSize))')
+        check(all(size >= 10 for size in metadata_sizes), 'Project metadata, feature labels, and footer microcopy stay at or above 10px')
+        recruiter_meta = page.locator('.recruiter-experience-card > div > span').first.evaluate('(e)=>Number.parseFloat(getComputedStyle(e).fontSize)')
+        check(recruiter_meta >= 10, 'Recruiter timeline metadata follows the same legible minimum')
         check(page.locator('.hero-title .title-line[data-reveal]').count() == 0 and page.locator('.hero-title[aria-label="From a question to working systems."]').count() == 1, 'Critical headline is independent of the scroll observer and has a complete accessible sentence')
         check(page.locator('.hero-section [data-hero-sequence][data-reveal]').count() == 0, 'Hero support copy uses the dedicated fail-open sequence instead of global reveal hiding')
         hero_animation = page.locator('.hero-title .title-line').first.evaluate('(e)=>getComputedStyle(e).animationName')
