@@ -1,10 +1,10 @@
 /* Versioned, same-origin shell/static cache. Never caches form, auth, or database traffic. */
-const CACHE_NAME = 'legion-portfolio-shell-v9';
+const CACHE_NAME = 'legion-portfolio-shell-v10';
 const SHELL_URLS = [
   '/',
   '/robots.txt',
   '/sitemap.xml',
-  '/site.webmanifest?v=20261109-2',
+  '/site.webmanifest?v=20261109-3',
   '/og-card.png',
   '/favicon.svg?v=20261109-2',
   '/favicon-32.png?v=20261109-2',
@@ -53,7 +53,7 @@ self.addEventListener('fetch', (event) => {
 
   const isStaticAsset = url.pathname.startsWith('/assets/')
     || url.pathname.startsWith('/profile/')
-    || /\.(?:css|js|mjs|svg|png|jpe?g|webp|woff2?|xml|webmanifest|txt)$/i.test(url.pathname);
+    || /\.(?:css|js|mjs|svg|png|jpe?g|webp|woff2?|xml|webmanifest|txt|ico)$/i.test(url.pathname);
   if (!isStaticAsset) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
