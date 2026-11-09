@@ -270,7 +270,7 @@ export const extracurriculars = [
   {
     title: 'Technology Club & Technical Team',
     organization: 'School activities',
-    description: 'Technology Club Officer and Technical Team Leader. Managed visual and video playback, speaker and audio setup for performances and school events, and hardware and software troubleshooting, including cable replacement and speaker repairs. Served as the primary technical operator for esports livestreams of Mobile Legends: Bang Bang and Call of Duty: Mobile.',
+    description: 'Technology Club Officer and Technical Team Leader. Managed visual and video playback, speaker and audio setup for performances and school events, and hardware and software troubleshooting, including cable replacement and speaker issues. Served as the primary technical operator for esports livestreams of Mobile Legends: Bang Bang and Call of Duty: Mobile.',
   },
   {
     title: 'Mathematics Club & Science Club',
