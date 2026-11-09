@@ -73,13 +73,25 @@ jobs:
 
       - name: Validate the Jekyll Pages artifact
         run: |
+          set -euo pipefail
           test -s _site/index.html
           test -d _site/assets
-          test -f _site/.nojekyll
           test -s _site/King-Art-Pacumberto-CV.pdf
           test -s _site/King-Art-Pacumberto-Resume.pdf
-          grep -Eq '<script[^>]+src="/assets/index-[^"]+\.js"' _site/index.html
-          grep -Eq '<link[^>]+href="/assets/index-[^"]+\.css"' _site/index.html
+
+          # Jekyll must leave the prebuilt Vite output untouched.
+          touch _site/.nojekyll
+          test -f _site/.nojekyll
+
+          # Reject the raw source shell: Pages must serve compiled, hashed assets.
+          grep -Eq '<script[^>]+src="/assets/index-[^"]+\\.js"' _site/index.html
+          grep -Eq '<link[^>]+href="/assets/index-[^"]+\\.css"' _site/index.html
+          ! grep -q 'src="/src/main.tsx"' _site/index.html
+
+          js_asset="$(grep -oE '/assets/index-[^"]+\\.js' _site/index.html | head -n 1 | sed 's#^/##')"
+          css_asset="$(grep -oE '/assets/index-[^"]+\\.css' _site/index.html | head -n 1 | sed 's#^/##')"
+          test -n "$js_asset" && test -s "_site/$js_asset"
+          test -n "$css_asset" && test -s "_site/$css_asset"
 
       - name: Save private Lighthouse reports to the workflow run
         if: always() && hashFiles('.lighthouseci/reports/**/*.html') != ''
