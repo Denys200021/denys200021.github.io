@@ -3807,3 +3807,83 @@ body {
     filter: none !important;
   }
 }
+
+
+/* LEGIBILITY PASS — keep editorial micro-labels readable without flattening hierarchy. */
+.site-shell :is(
+  small, .brand-copy small, .availability-line, .hero-pretitle, .hero-footnote,
+  .hero-index, .hero-bottomline, .orbit-center small, .orbit-node small,
+  .orbit-coordinate, .ticker-set, .project-count, .project-meta, .project-stack > span,
+  .project-filters button, .projects-bottom > span, .skill-group-meta, .skill-pills > span,
+  .skills-core span, .skills-orbit-label, .skills-note, .journey-label, .timeline-period,
+  .timeline-organization, .timeline-tags > span, .education-type, .education-foot,
+  .education-record > span, .education-record strong, .activity-summary-copy > span,
+  .achievement-source, .achievement-mark, .contact-meta, .contact-aside-top,
+  .copy-profile, .contact-github, .contact-corner, .footer-copy, .footer-copy small,
+  .footer-links a, .footer-links button, .eyebrow, .detail-label, .palette-label,
+  .palette-index, .palette-footer, .intro-center p, .intro-center small, .intro-skip,
+  .quick-navigator > span, .quick-navigator button, .quick-navigator-heading,
+  .quick-navigator-toggle-copy, .quick-navigator-rail-label, .quick-navigator-rail-index,
+  .quick-navigator-number, .feature-eyebrow, .feature-code, .feature-side-note,
+  .feature-text-button, .compare-stamp, .compare-selectors label, .compare-versus,
+  .compare-project-head span, .compare-row > span, .compare-footnote, .lab-shell-head,
+  .lab-shell-foot, .lab-tabs button, .energy-result-stats small, .skill-map-chip > span,
+  .skill-map-evidence > small, .photo-archive-filters, .photo-tile small, .photo-tile > i,
+  .photo-before-label, .photo-after-label, .photo-split-control, .network-topology-head,
+  .network-node b, .network-node small, .network-port-list, .network-log > span,
+  .network-event time, .osint-source-types span, .osint-step-index, .hardware-visual > p,
+  .temperature-readout span, .fan-curve, .hardware-formula b, .notebook-toolbar,
+  .notebook-entry > span, .building-card-top, .building-card > small,
+  .inquiry-form > label, .comment-form > label, .admin-login > label, .privacy-microcopy,
+  .comments-empty, .admin-session-bar, .admin-loading, .admin-record-top,
+  .admin-contact-line, .admin-note, .analytics-path, .admin-activity-row time,
+  .recruiter-role, .recruiter-eyebrow, .recruiter-tags > span, .recruiter-index,
+  .recruiter-footer
+) {
+  font-size: clamp(10px, .72em, 12px);
+  line-height: 1.5;
+}
+
+.site-shell :is(.hero-description, .section-heading > p, .feature-header > p, .about-main p,
+  .research-practice-grid article p, .project-card-content > p, .timeline-content p,
+  .activity-content p, .contact-content > p, .modal-overview, .modal-grid p, .modal-detail,
+  .capability-list div, .recruiter-intro, .recruiter-section-heading > p,
+  .recruiter-scope-note, .recruiter-project-body > p, .recruiter-skill-card > p,
+  .recruiter-experience-card p, .recruiter-education-item p, .recruiter-awards p,
+  .recruiter-leadership-grid p) {
+  max-width: 70ch;
+  text-wrap: pretty;
+}
+
+.site-shell :is(.timeline-period, .education-record > span, .achievement-mark,
+  .project-count strong, .metric-card strong, .contact-handle) {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+.section-heading { max-width: 780px; }
+.section-heading > p { max-width: 66ch; }
+.project-grid { align-items: stretch; }
+.project-card-content { gap: 14px; }
+.project-card-content > p { max-width: 58ch; }
+.timeline-content, .activity-content { max-width: 68ch; }
+
+@media (max-width: 760px) {
+  .site-shell :is(.hero-description, .section-heading > p, .feature-header > p, .about-main p,
+    .research-practice-grid article p, .project-card-content > p, .timeline-content p,
+    .activity-content p, .contact-content > p, .modal-overview, .modal-grid p,
+    .modal-detail, .capability-list div, .recruiter-intro, .recruiter-section-heading > p,
+    .recruiter-scope-note, .recruiter-project-body > p, .recruiter-skill-card > p,
+    .recruiter-experience-card p, .recruiter-education-item p, .recruiter-awards p,
+    .recruiter-leadership-grid p) {
+    font-size: 14px;
+    line-height: 1.72;
+  }
+  .section-heading { margin-bottom: clamp(28px, 7vw, 40px); }
+  .project-card-content { gap: 12px; }
+}
+
+@media (max-width: 380px) {
+  .hero-title { font-size: clamp(40px, 12vw, 52px); }
+  .hero-actions .button { min-height: 42px; font-size: 10px; }
+  .page-width { width: calc(100% - 28px); }
+}
