@@ -119,21 +119,25 @@ favicon_png = (ROOT / "public/favicon-32.png").read_bytes()
 favicon_ico = (ROOT / "public/favicon.ico").read_bytes()
 manifest = read("public/site.webmanifest")
 service_worker = read("public/sw.js")
-check(all(f'/favicon{suffix}?v=20261109-2' in html_shell for suffix in ('.svg', '-32.png', '.ico')) and '<link rel="mask-icon"' in html_shell and 'rel="icon" type="image/x-icon"' in html_shell,
-      "HTML provides versioned SVG, PNG, ICO, and mask-icon favicon references")
+check(all(f'/favicon{suffix}?v=20261109-3' in html_shell for suffix in ('.svg', '-32.png', '.ico')) and '<link rel="mask-icon"' in html_shell and 'rel="icon" type="image/x-icon"' in html_shell,
+      "HTML provides refreshed SVG, PNG, ICO, and mask-icon favicon references")
 check(favicon_svg.lstrip().startswith("<svg") and favicon_png.startswith(bytes([137, 80, 78, 71, 13, 10, 26, 10])) and favicon_ico[:4] == bytes([0, 0, 1, 0]),
       "All deployed favicon source formats have valid file signatures")
-check('favicon.svg?v=20261109-2' in manifest and 'favicon-32.png?v=20261109-2' in manifest,
-      "Web app manifest includes versioned vector and raster icons")
-check("legion-portfolio-shell-v9" in service_worker and "favicon.ico?v=20261109-2" in service_worker,
-      "Service-worker cache version and precache list refresh the favicon set")
-check("legion-portfolio-motion-v6" in html_shell and "systemPrefersReducedMotion" in html_shell and "motionOverride = savedMotion === 'on' || savedMotion === 'off' ? savedMotion : 'system'" in html_shell,
-      "Early boot enables motion unless a visitor has explicitly paused it")
-check("legion-portfolio-motion-v6" in read("src/App.tsx") and "localStorage.getItem('legion-portfolio-motion-v6')" in read("src/PortfolioFeatures.tsx") and "prefers-reduced-motion: reduce" in read("src/PortfolioFeatures.tsx"),
-      "React motion controls and the intro sequence share the motion-on preference")
+check('favicon.svg?v=20261109-3' in manifest and 'favicon-32.png?v=20261109-3' in manifest,
+      "Web app manifest includes refreshed vector and raster icons")
+check("legion-portfolio-shell-v10" in service_worker and "favicon.ico?v=20261109-3" in service_worker and "|ico)$/i" in service_worker,
+      "Service-worker cache version refreshes and caches every favicon format")
+check("legion-portfolio-motion-v6" in html_shell and "const motionOverride = savedMotion === 'off' ? 'off' : 'on'" in html_shell and "const motionEnabled = savedMotion !== 'off'" in html_shell,
+      "Early boot enables motion by default and applies only an explicit saved visitor pause")
+app_source = read("src/App.tsx")
+intro_source = read("src/PortfolioFeatures.tsx")
+check("return localStorage.getItem('legion-portfolio-motion-v6') === 'off' ? 'off' : 'on'" in app_source and "const motionEnabled = motionPreference === 'on'" in app_source,
+      "React motion controls default to on and preserve an explicit visitor pause")
+check("if (savedMotion === 'off') return false" in intro_source and "return true" in intro_source,
+      "The intro sequence follows the same default-on visitor motion preference")
 adaptive_source = read("src/adaptive.ts")
 check("document.documentElement.dataset.motion === 'off'" in adaptive_source and "prefers-reduced-motion" not in adaptive_source,
-      "Adaptive motion load follows the site's explicit pause state rather than overriding the default from the OS")
+      "Adaptive motion load follows the explicit site pause state")
 check("cache: npm" in workflow and "npm ci --no-audit --no-fund" in workflow and (ROOT / "package-lock.json").is_file(), "Node setup uses npm caching with the committed lockfile and reproducible npm ci installation")
 check("needs: verify-and-package" in workflow and "id-token: write" in workflow and "pages: write" in workflow,
       "Pages deployment waits for verification and has the documented Pages/id-token permissions")
