@@ -1,4 +1,4 @@
-name: Verify and deploy portfolio with GitHub Pages Jekyll
+name: Verify and deploy portfolio
 
 on:
   push:
@@ -59,39 +59,28 @@ jobs:
       - name: Run Lighthouse audits on the full site and recruiter view
         run: lhci autorun
 
-      # Compile React and TypeScript with Vite before handing static output to Jekyll.
-      # Jekyll packages dist/ for GitHub Pages; it does not compile the application.
-      - name: Add GitHub Pages Jekyll configuration to the Vite output
-        run: cp .github/jekyll/_config.yml dist/_config.yml
-
-      - name: Package the Vite output with GitHub Pages Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: ./dist
-          destination: ./_site
-          verbose: true
-
-      - name: Validate the Jekyll Pages artifact
+      # Vite has already compiled the React application into dist/.
+      # Publish that directory directly; the Jekyll pass is unnecessary and
+      # can alter permissions on GitHub-hosted runners.
+      - name: Validate the production Pages artifact
         run: |
           set -euo pipefail
-          test -s _site/index.html
-          test -d _site/assets
-          test -s _site/King-Art-Pacumberto-CV.pdf
-          test -s _site/King-Art-Pacumberto-Resume.pdf
+          test -s dist/index.html
+          test -d dist/assets
+          test -s dist/King-Art-Pacumberto-CV.pdf
+          test -s dist/King-Art-Pacumberto-Resume.pdf
+          test -f dist/.nojekyll
 
-          # Jekyll must leave the prebuilt Vite output untouched.
-          sudo touch _site/.nojekyll
-          test -f _site/.nojekyll
+          # Reject the raw Vite development shell: production must use
+          # compiled, hashed JavaScript and CSS bundles.
+          grep -Eq '<script[^>]+src="/assets/index-[^"]+\.js"' dist/index.html
+          grep -Eq '<link[^>]+href="/assets/index-[^"]+\.css"' dist/index.html
+          ! grep -q 'src="/src/main.tsx"' dist/index.html
 
-          # Reject the raw source shell: Pages must serve compiled, hashed assets.
-          grep -Eq '<script[^>]+src="/assets/index-[^"]+\.js"' _site/index.html
-          grep -Eq '<link[^>]+href="/assets/index-[^"]+\.css"' _site/index.html
-          ! grep -q 'src="/src/main.tsx"' _site/index.html
-
-          js_asset="$(grep -oE '/assets/index-[^"]+\.js' _site/index.html | head -n 1 | sed 's#^/##')"
-          css_asset="$(grep -oE '/assets/index-[^"]+\.css' _site/index.html | head -n 1 | sed 's#^/##')"
-          test -n "$js_asset" && test -s "_site/$js_asset"
-          test -n "$css_asset" && test -s "_site/$css_asset"
+          js_asset="$(grep -oE '/assets/index-[^"]+\.js' dist/index.html | head -n 1 | sed 's#^/##')"
+          css_asset="$(grep -oE '/assets/index-[^"]+\.css' dist/index.html | head -n 1 | sed 's#^/##')"
+          test -n "$js_asset" && test -s "dist/$js_asset"
+          test -n "$css_asset" && test -s "dist/$css_asset"
 
       - name: Save private Lighthouse reports to the workflow run
         if: always() && hashFiles('.lighthouseci/reports/**/*.html') != ''
@@ -101,11 +90,11 @@ jobs:
           path: .lighthouseci/reports
           retention-days: 14
 
-      - name: Upload Jekyll-packaged Pages artifact
+      - name: Upload compiled Vite Pages artifact
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4
         with:
-          path: ./_site
+          path: ./dist
 
   deploy:
     if: github.event_name != 'pull_request'
@@ -118,6 +107,6 @@ jobs:
     runs-on: ubuntu-24.04
     needs: verify-and-package
     steps:
-      - name: Deploy verified Jekyll Pages artifact
+      - name: Deploy verified Pages artifact
         id: deployment
         uses: actions/deploy-pages@v4
