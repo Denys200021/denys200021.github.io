@@ -23,11 +23,10 @@ export function IntroSequence() {
     try {
       if (sessionStorage.getItem('legion-intro-seen-v1') === 'yes') return false
       const savedMotion = localStorage.getItem('legion-portfolio-motion-v6')
-      if (savedMotion === 'on') return true
       if (savedMotion === 'off') return false
-      return !(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
-    } catch { /* Storage may be unavailable; follow the system preference. */ }
-    return !(window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
+      return true
+    } catch { /* Storage may be unavailable; keep the default introduction enabled. */ }
+    return true
   })
 
   useEffect(() => {
