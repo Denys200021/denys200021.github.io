@@ -305,7 +305,7 @@ with sync_playwright() as p:
     page.screenshot(path=str(Path(tempfile.gettempdir()) / 'motion-header-mobile.png'),full_page=False)
 
     print('QA:boot preference', flush=True)
-    # Validate boot preference behavior: default follows OS, v4 explicit setting overrides it.
+    # Validate boot preference behavior: motion is on by default and v5 stores an explicit pause.
     pref_page=browser.new_page(reduced_motion='no-preference')
     pref_page.set_content('<!doctype html><html><head><meta name=theme-color content=#101619></head><body></body></html>')
     import re
@@ -340,7 +340,7 @@ with sync_playwright() as p:
 
 print(json.dumps({
   'sectionReveal':{'initial':initial,'enter':entered,'exit':exited,'reenter':returned,'dynamicProject':dynamic_state,
-                   'disabledMotion':disabled,'noIntersectionObserver':no_io,'noMutationObserver':no_mo,'observerTimeoutFallback':timeout_fallback,'reducedMotion':reduced,'manualReducedMotionOverride':manual_override},
+                   'disabledMotion':disabled,'noIntersectionObserver':no_io,'noMutationObserver':no_mo,'observerTimeoutFallback':timeout_fallback,'defaultMotionOn':default_motion,'explicitPause':paused_motion},
   'disclosures':disclosure_results,
   'KA_responsive':brand_metrics,
   'masthead':{'downScroll':header_hidden,'upScroll':header_revealed,'topGuard':top_header,'mobileMenuGuard':menu_header,'motionOffGuard':static_header,'mobileDownScroll':mobile_header_hidden},
