@@ -605,16 +605,12 @@ export default function App() {
     try { return localStorage.getItem('legion-portfolio-sound-v2') !== 'off' } catch { return true }
   })
   const soundEnabledRef = useRef(soundEnabled)
-  const [motionPreference, setMotionPreference] = useState<'system' | 'on' | 'off'>(() => {
+  const [motionPreference, setMotionPreference] = useState<'on' | 'off'>(() => {
     try {
-      const saved = localStorage.getItem('legion-portfolio-motion-v6')
-      return saved === 'on' || saved === 'off' ? saved : 'system'
-    } catch { return 'system' }
+      return localStorage.getItem('legion-portfolio-motion-v6') === 'off' ? 'off' : 'on'
+    } catch { return 'on' }
   })
-  const [systemReducedMotion, setSystemReducedMotion] = useState(() => (
-    typeof window !== 'undefined' && (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
-  ))
-  const motionEnabled = motionPreference === 'on' || (motionPreference === 'system' && !systemReducedMotion)
+  const motionEnabled = motionPreference === 'on'
   const [copied, setCopied] = useState(false)
 
   const categories: ('All' | ProjectCategory)[] = ['All', 'Software', 'Data & Systems', 'Embedded', 'Creative']
@@ -703,20 +699,6 @@ export default function App() {
     root.dataset.motion = motionEnabled ? 'on' : 'off'
     root.dataset.motionOverride = motionPreference
   }, [motionEnabled, motionPreference])
-
-  useEffect(() => {
-    const query = window.matchMedia?.('(prefers-reduced-motion: reduce)')
-    if (!query) return
-    const syncSystemPreference = (event: MediaQueryListEvent | MediaQueryList) => {
-      setSystemReducedMotion(event.matches)
-    }
-    if (typeof query.addEventListener === 'function') {
-      query.addEventListener('change', syncSystemPreference)
-      return () => query.removeEventListener('change', syncSystemPreference)
-    }
-    query.addListener(syncSystemPreference)
-    return () => query.removeListener(syncSystemPreference)
-  }, [])
 
   useEffect(() => {
     soundEnabledRef.current = soundEnabled
