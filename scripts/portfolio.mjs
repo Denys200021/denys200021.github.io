@@ -227,10 +227,8 @@ async function check() {
   const vite = await read('vite.config.ts')
   log(vite.includes('port: 5174') && vite.includes('port: 4174') && vite.includes('strictPort: true'), 'Development and preview ports remain isolated from 5173')
   const workflow = await read('.github/workflows/deploy.yml')
-  log(workflow.includes('npm run verify') && workflow.includes('actions/configure-pages@v5') && workflow.includes('actions/jekyll-build-pages@v1') && workflow.includes('actions/deploy-pages@v4') && workflow.includes('actions/upload-pages-artifact@v4') && workflow.includes('source: ./dist') && workflow.includes('destination: ./_site') && workflow.includes('path: ./_site'), 'GitHub Pages workflow verifies Vite output, packages it with Jekyll, uploads _site, and deploys it')
-  const jekyllConfig = await read('.github/jekyll/_config.yml')
-  log(jekyllConfig.includes('url: "https://legioniz.github.io"') && jekyllConfig.includes('baseurl: ""') && jekyllConfig.includes('timezone: Asia/Manila'), 'Jekyll wrapper metadata matches the root GitHub Pages user-site URL')
-  log(workflow.indexOf('npm run verify') < workflow.indexOf('actions/jekyll-build-pages@v1') && workflow.indexOf('actions/jekyll-build-pages@v1') < workflow.indexOf('actions/upload-pages-artifact@v4'), 'Vite verification/build completes before Jekyll packaging and Pages artifact upload')
+  log(workflow.includes('npm run verify') && workflow.includes('actions/configure-pages@v5') && workflow.includes('actions/deploy-pages@v4') && workflow.includes('actions/upload-pages-artifact@v4') && workflow.includes('path: ./dist') && workflow.includes('test -s dist/index.html') && workflow.includes('test -d dist/assets') && workflow.includes('test -f dist/.nojekyll') && !workflow.includes('actions/jekyll-build-pages@v1') && !workflow.includes('destination: ./_site'), 'GitHub Pages workflow validates and uploads compiled Vite dist output directly without Jekyll packaging')
+  log(workflow.indexOf('npm run verify') < workflow.indexOf('Validate the production Pages artifact') && workflow.indexOf('Validate the production Pages artifact') < workflow.indexOf('actions/upload-pages-artifact@v4'), 'Vite verification/build and production artifact validation complete before Pages upload')
 
   const publicFiles = await readdir(path.join(ROOT, 'public'))
   log(!publicFiles.some((name) => /private|phone|personal-cv/i.test(name)), 'No private CV file is stored in public/')
